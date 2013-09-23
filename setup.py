@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-# Note: Based on https://github.com/kennethreitz/requests/blob/master/setup.py
-# See: http://docs.python.org/2/distutils/setupscript.html
-
 import os
 import sys
 
-import nway_pandas
+import BanzaiDB.__init__ as meta
 
 try:
     from setuptools import setup
@@ -17,9 +14,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-packages = [
-    'nway_pandas',
-]
+packages = [meta.__title__,]
 
 requires = []
 with open('requirements.txt') as fin:
@@ -28,22 +23,21 @@ for l in lines:
     requires.append(l.strip())
 
 setup(
-    name='nway_pandas',
-    version=nway_pandas.__version__,
-    description='nway_pandas - Nesoni helper/plugin to get nway results into '
-                'pandas dataframe',
-    long_description=open('README.rst').read(),
-    author='Mitchell Stanton-Cook',
-    author_email='m.stantoncook@gmail.com',
-    url='https://github.com/mscook/nway_pandas',
-    packages=packages,
-    scripts = [''],
-    package_data={'': ['LICENSE']},
-    package_dir={'nway_pandas': 'nway_pandas'},
-    include_package_data=True,
-    install_requires=requires,
-    license=open('LICENSE').read(),
-    zip_safe=False,
+    name =                 meta.__title__,
+    version =              meta.__version__,
+    description =          meta.__description__,
+    long_description =     open('README.rst').read(),
+    author =               meta.__author__,
+    author_email =         meta.__author_email__,
+    url =                  meta.__url__,
+    packages =             packages,
+    scripts =              [''],
+    package_data =         {'': ['LICENSE']},
+    package_dir =          {meta.__title__: meta.__title__},
+    include_package_data = True,
+    install_requires =     requires,
+    license =              meta.__license__,
+    zip_safe =             False,
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
