@@ -144,7 +144,7 @@ def populate_mapping(args):
                           "VarCount" : count}
             inserted = r.table('strains').insert(strain_JSON).run(connection)
         else:
-            print "No variants for %s. Skipped" % (f)
+            print "No variants for %s. Skipped" % (report)
             s = report.split('/')[-2]
             strain_JSON = {"StrainID" : s,
                           "VarCount" : 0}
