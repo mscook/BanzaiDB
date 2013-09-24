@@ -140,19 +140,21 @@ def populate_mapping(args):
             #   durability="soft"
             #   run(durability="soft", noreply=True)
             inserted = r.table('variants').insert(parsed).run(connection)
-            strain_JSON = {"StrainID" : parsed[0]['StrainID'],
-                          "VarCount" : count}
+            strain_JSON = {"StrainID": parsed[0]['StrainID'],
+                          "VarCount": count,
+                          "id": parsed[0]['StrainID']}
             inserted = r.table('strains').insert(strain_JSON).run(connection)
         else:
             print "No variants for %s. Skipped" % (report)
             s = report.split('/')[-2]
             strain_JSON = {"StrainID" : s,
-                          "VarCount" : 0}
+                          "VarCount" : 0,
+                          "id" : s}
+            inserted = r.table('strains').insert(strain_JSON).run(connection)
     # Now, do the reference
-    ref, ref_meta = core.reference_genome_features_to_JSON(args.reference)
+    ref, ref_meta = core.reference_genome_features_to_JSON(ref)
     inserted = r.table('ref').insert(ref).run(connection)
     inserted = r.table('ref_feat').insert(ref_meta).run(connection)
-    references_coll.insert(ref)
 
 
 def populate_assembly():

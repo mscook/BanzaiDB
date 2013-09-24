@@ -74,23 +74,27 @@ def reference_genome_features_to_JSON(genome_file):
     Given a genome refernce in GenBank format convert CDS features to JSON
     """
     with open(genome_file) as fin:
-        genome = SeqIO.read(handle, "genbank")
-        reference_name = genome.features[0].qualifiers['organism'][0]
-        print "Adding %s into DB" % (reference_name)
-        JSON_r = {'RefID' : nucleotide_db_id,
-                  'RefName' : reference_name}
+        genome = SeqIO.read(fin, "genbank")
+        gd, gn, gid = genome.description, genome.name, genome.id
+        print "Adding %s into DB" % (gd)
+        JSON_r = {'RefID' : gid,
+                  'RefName' : gd,
+                  'id' : gn}
         parsed_list = []
         for feat in genome.features:
             # Only get CDS features
             if feat.type == 'CDS':
-                dna = str(feat.extract(genome.seq))
+                dna   = str(feat.extract(genome.seq))
+                start = int(feat.location.start.position)
                 JSON_f = {'LocusTag' : feat.qualifiers['locus_tag'][0],
                           'Sequence' : dna,
                           'Translation' : feat.qualifiers['translation'][0],
-                          'Start' : int(feat.location.start.position),
+                          'Start' : start,
                           'End' : int(feat.location.end.position),
                           'Strand': int(feat.strand),
                           'Product' : feat.qualifiers['product'][0],
-                          'RefID': nucleotide_db_id}
+                          'RefID': gid,
+                          'id': gid+"_"+str(start)
+                        }
                 parsed_list.append(JSON_f)
         return JSON_r, parsed_list
