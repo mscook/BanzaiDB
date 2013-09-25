@@ -49,7 +49,7 @@ class BanzaiDBConfig():
         cfg['db_name'] = 'Banzai'
         try:
             with open(os.path.expanduser('~/')+'.BanzaiDB.cfg') as fin:
-                sys.stderr.write("Using a BanzaiDB config file\n")
+                #sys.stderr.write("Using a BanzaiDB config file\n")
                 colors = []
                 for line in fin:
                     if (line.startswith('db_host')  or 
@@ -58,7 +58,8 @@ class BanzaiDBConfig():
                         option, val = line.split('=')
                         cfg[option.strip()] = val.strip()
         except IOError:
-            sys.stderr.write("Using RethinkDB defaults\n")
+            #sys.stderr.write("Using RethinkDB defaults\n")
+            pass
             #for k, v in cfg.items():
             #    print "\t%s = %s" % (k, str(v))
             #print 40*'-'
