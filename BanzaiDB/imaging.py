@@ -79,6 +79,8 @@ def plot_SNPs(snp_features, labels):
         gdt_features = gdd.new_track(idx+1, greytrack=False, name=labels[idx])
         gds_features = gdt_features.new_set()
         for f in track:
+            #print f
+            #exit()
             gds_features.add_feature(f)
     gdd.draw(format='circular', pagesize=(15*cm,15*cm), track_size=0.25)
     gdd.write("GD_labels_default.pdf", "pdf")
