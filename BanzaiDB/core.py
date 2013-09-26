@@ -60,14 +60,14 @@ def nesoni_report_to_JSON(report_file):
                 dat[4] = int(dat[4])
             elif cons.strip() != '' and cons.split(' ')[0] in misc_set:
                 if type.find("substitution") != -1:
-                    dat = ('substitution',) + 
-                                    parsers.parse_substitution_misc(cons)
+                    dat = (('substitution',) + 
+                                    parsers.parse_substitution_misc(cons))
                 elif type.find("insertion") != -1:
-                    dat = ('insertion', None) + 
-                                    parsers.parse_insertion_misc(cons)
+                    dat = (('insertion', None) + 
+                                    parsers.parse_insertion_misc(cons))
                 elif type.find("deletion") != -1:
-                    dat = ('deletion', None) + 
-                                    parsers.parse_deletion_misc(cons)
+                    dat = (('deletion', None) + 
+                                    parsers.parse_deletion_misc(cons))
                 else:
                     raise Exception("Unsupported. Only SNPs & INDELS")
                 dat = list(dat)
