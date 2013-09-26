@@ -6,8 +6,14 @@ The following tables are defined in BanzaiDB
 Mapping
 -------
 
-Variants
-~~~~~~~~
+
+reference_genome_features
+strains_under_investigation
+reference_genomes
+
+
+determined_variants
+~~~~~~~~~~~~~~~~~~~
 
 +------------------+----------------+----------------------------------------+
 | Key              | Value (type)   | Comments                               |
@@ -46,8 +52,8 @@ Variants
 +------------------+----------------+----------------------------------------+
 
 
-Strains
-~~~~~~~
+strains_under_investigation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +------------------+----------------+----------------------------------------+
 | Key              | Value (type)   | Comments                               |
