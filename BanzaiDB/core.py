@@ -116,12 +116,13 @@ def reference_genome_features_to_JSON(genome_file):
                   'id' : gn}
         parsed_list = []
         for feat in genome.features:
-            # Only get CDS features
+            # CDS features
             if feat.type == 'CDS':
+                start = int(feat.location.start.position)
                 JSON_f = {'LocusTag' : feat.qualifiers['locus_tag'][0],
                           'Sequence' : str(feat.extract(genome.seq)),
                           'Translation' : feat.qualifiers['translation'][0],
-                          'Start' : int(feat.location.start.position),
+                          'Start' : start,
                           'End' : int(feat.location.end.position),
                           'Strand': int(feat.strand),
                           'Product' : feat.qualifiers['product'][0],
@@ -130,13 +131,18 @@ def reference_genome_features_to_JSON(genome_file):
                         }
                 parsed_list.append(JSON_f)
             elif feat.type in misc_set:
+                start = int(feat.location.start.position)
+                try:
+                    product = feat.qualifiers['product'][0]
+                except KeyError:
+                    product = "Possible pseudo"
                 JSON_f = {'LocusTag' : feat.qualifiers['locus_tag'][0],
                           'Sequence' : str(feat.extract(genome.seq)),
                           'Translation' : None,
-                          'Start' : int(feat.location.start.position),
+                          'Start' : start,
                           'End' : int(feat.location.end.position),
                           'Strand': int(feat.strand),
-                          'Product' : feat.qualifiers['product'][0],
+                          'Product' : product,
                           'RefID': gid,
                           'id': gid+"_"+str(start)
                         }
