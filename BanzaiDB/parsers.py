@@ -87,6 +87,26 @@ def parse_substitution(consequence):
     protein = strip_non_CDS(protein)
     return sub_type, locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
 
+def parse_substitution_misc(consequence):
+    """
+    Return fields for syn, non-syn or correlated 
+    """
+    elem       = consequence.strip().split(' ')
+    #Default: ['gene', 'G=>A', 'GBS222_0094', 'base', '33']
+    correlated = False
+    locus_tag  = elem[2]
+    # Handle: ['gene', 'C=>G', 'GBS222_t08', 'base', '64,', 'tRNA', 'C=>G', 'GBS222_t08', 'base', '64', 'tRNA-Phe']
+    if elem[4][-1] == ',':
+        elem[4]= elem[4][:-1]
+    base       = int(elem[4])
+    codon      = None
+    region     = None
+    sub_type   = None
+    old_aa, new_aa = None, None
+    protein = None
+    return sub_type, locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
+
+
 def parse_insertion(consequence):
     # As minimum length can be 7 (but test for 9)
     elem       = consequence.strip().split(' ') + ['', '']
@@ -138,6 +158,23 @@ def parse_insertion(consequence):
     protein = strip_non_CDS(protein)
     return locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
 
+
+def parse_insertion_misc(consequence):
+    elem       = consequence.strip().split(' ') + ['', '']
+    # Default: ['gene', '-=>ACC', 'GBS222_0005', 'before', 'base', '105', '', ''] 
+    correlated = False
+    locus_tag  = elem[2]
+    # Handle: ['gene', 'C=>G', 'GBS222_t08', 'base', '64,', 'tRNA', 'C=>G', 'GBS222_t08', 'base', '64', 'tRNA-Phe']
+    if elem[5][-1] == ',':
+        elem[5]= elem[5][:-1]
+    base       = int(elem[5])
+    region     = None
+    old_aa, new_aa = None, None
+    codon = None
+    protein = None
+    return locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
+
+
 def parse_deletion(consequence):
     # As minimum length can be 7 (but test for 9)
     elem = consequence.strip().split(' ') + ['', '']
@@ -172,6 +209,22 @@ def parse_deletion(consequence):
     else:
         raise Exception("Error in deletion", elem)
     protein = strip_non_CDS(protein)  
+    return locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
+
+
+def parse_deletion_misc(consequence):
+    elem = consequence.strip().split(' ') + ['', '']
+    # Default: ['gene', 'T=>-', 'GBS222_0017', 'base', '366', '', '']
+    correlated = False
+    locus_tag  = elem[2]
+    # Handle: ['gene', 'G=>-', 'GBS222_r08', 'base', '2266,', 'rRNA', 'G=>-', 'GBS222_r08', 'base', '2266', '23S', 'ribosomal', 'RNA', '', '']
+    if elem[4][-1] == ',':
+        elem[4]= elem[4][:-1]
+    base       = int(elem[4])
+    codon      = None
+    region     = None
+    old_aa, new_aa = None, None
+    protein = None
     return locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
 
 
