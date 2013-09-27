@@ -155,7 +155,7 @@ def populate_mapping(args):
     ref, ref_meta = core.reference_genome_features_to_JSON(ref)
     inserted = r.table('ref').insert(ref).run(connection)
     inserted = r.table('ref_feat').insert(ref_meta).run(connection)
-
+    connection.close()
 
 def populate_assembly():
     pass
