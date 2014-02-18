@@ -1,5 +1,8 @@
-BanzaiDB
-========
+.. image:: https://raw.github.com/mscook/BanzaiDB/master/misc/BanzaiDB.png
+    :alt: BanzaiDB logo
+    :align: center
+
+
 
 BanzaiDB is a tool that:
     * puts the results of NGS experiments into a (NoSQL) datastore
