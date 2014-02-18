@@ -4,13 +4,12 @@
 What is BanzaiDB?
 -----------------
 
-BanzaiDB is a generalised framework for pairing Microbial Genomics Next
-Generation Sequencing (NGS) analysis with a NoSQL database. We use the 
-`RethinkDB_` NoSQL database.
+BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing 
+(NGS) analysis with a NoSQL_ database. We use the RethinkDB_ NoSQL database.
 
 BanzaiDB:
-    * initalises a NoSQL database and associated tables,
-    * populates the database with results of NGS experiments/analysis, and,
+    * initalises the NoSQL database and associated tables,
+    * populates the database with results of NGS experiments/analysis and,
     * provides a set of query functions to wrangle with the data stored within 
       the database.
 
@@ -18,19 +17,25 @@ BanzaiDB:
 Why BanzaiDB?
 -------------
 
-Downstream analysis (secondary/tertiary) of many microbial genomes typically 
-generates many seperate flat files.
+Downstream analysis (secondary/tertiary) of large collections of draft 
+microbial genomes typically generates many seperate flat files. The 
+bioinformatician will:
+    * write scripts to parse and extract the important information
 
 
+About BanzaiDB
+--------------
 
-BanzaiDB is based on the Banzai NGS pipeline workflow and thus is geared 
-towards handling data generated from Velvet (assembly), Nesoni (mapping/
-variant calling), Mugsy (whole genome alignment) BRATTNextGen 
-(recombination detection) and Prokka (annotation) tools.
+BanzaiDB is geared towards outputs of Bioinformatics software employed by 
+the `Banzai NGS pipeline`_. It is thus geared towards handling data generated 
+from Velvet and SPAdes (assembly), BWA and Nesoni (mapping/variant calling), 
+Mugsy (whole genome alignment) BRATTNextGen (recombination detection) and 
+Prokka (annotation) set of tools.
 
-*The present focus is storing SNPs and recombination analysis.*
+*The present focus is on storing and manipulating the results of SNP and 
+recombination analysis.*
 
-**This is not a stable API.** 
+**Banzai is not a stable API.** 
 
 
 Requirements
@@ -49,13 +54,13 @@ Python modules (these can be pip installed):
 
 To increase the rethinkdb client performance performance::
 
-    protoc --version
-    wget http://protobuf.googlecode.com/files/protobuf-2.4.1.tar.gz
-    tar -zxvf protobuf-2.4.1.tar.gz
-    cd protobuf-2.4.1/
-    cd python/
-    python setup.py install
-    export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+    $ protoc --version
+    $ wget http://protobuf.googlecode.com/files/protobuf-2.4.1.tar.gz
+    $ tar -zxvf protobuf-2.4.1.tar.gz
+    $ cd protobuf-2.4.1/
+    $ cd python/
+    $ python setup.py install
+    $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 
 
 Assumptions
@@ -76,4 +81,7 @@ and have successfully install BanzaiDB.
 
 
 
-.. _RethinkDB: www.rethinkdb.com
+.. _RethinkDB: http://www.rethinkdb.com
+.. _NoSQL: http://nosql-database.org
+.. _Banzai NGS pipeline: https://github.com/mscook/Banzai-MicrobialGenomics-Pipeline
+
