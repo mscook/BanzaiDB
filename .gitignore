@@ -6,3 +6,7 @@
 *.pyc
 *.pyo
 sandbox/*
+## sphinx doc specific
+_build
+_static
+_templates
