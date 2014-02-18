@@ -1,16 +1,27 @@
 .. image:: https://raw.github.com/mscook/BanzaiDB/master/misc/BanzaiDB.png
     :alt: BanzaiDB logo
-    :align: center
+
+What is BanzaiDB?
+-----------------
+
+BanzaiDB is a generalised framework for pairing Microbial Genomics Next
+Generation Sequencing (NGS) analysis with a NoSQL database. We use the 
+`RethinkDB_` NoSQL database.
+
+BanzaiDB:
+    * initalises a NoSQL database and associated tables,
+    * populates the database with results of NGS experiments/analysis, and,
+    * provides a set of query functions to wrangle with the data stored within 
+      the database.
 
 
+Why BanzaiDB?
+-------------
 
-BanzaiDB is a tool that:
-    * puts the results of NGS experiments into a (NoSQL) datastore
-    * provides a set of generalised query functions to wrangle with the data
-      stored in the datastore.
+Downstream analysis (secondary/tertiary) of many microbial genomes typically 
+generates many seperate flat files.
 
-**BanzaiDB is a generalised framework for pairing NGS analysis with 
-the RethinkDB database.**
+
 
 BanzaiDB is based on the Banzai NGS pipeline workflow and thus is geared 
 towards handling data generated from Velvet (assembly), Nesoni (mapping/
@@ -62,3 +73,7 @@ In the file **~/.BanzaiDB.cfg**
 and have successfully install BanzaiDB.
 
 **3)** Write the rest...
+
+
+
+.. _RethinkDB: www.rethinkdb.com
