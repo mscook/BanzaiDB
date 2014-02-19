@@ -18,7 +18,7 @@ Why BanzaiDB?
 -------------
 
 Downstream analysis (secondary/tertiary) of large collections of draft 
-microbial genomes typically generates many seperate flat files. The 
+microbial genomes typically generates many separate flat files. The 
 bioinformatician will:
     * write scripts to parse and extract the important information
 
@@ -28,14 +28,37 @@ About BanzaiDB
 
 BanzaiDB is geared towards outputs of Bioinformatics software employed by 
 the `Banzai NGS pipeline`_. It is thus geared towards handling data generated 
-from Velvet and SPAdes (assembly), BWA and Nesoni (mapping/variant calling), 
-Mugsy (whole genome alignment) BRATTNextGen (recombination detection) and 
-Prokka (annotation) set of tools.
+from:
+    * Velvet and SPAdes (assembly), 
+    * BWA and Nesoni (mapping/variant calling),
+    * Mugsy (whole genome alignment), 
+    * BRATTNextGen (recombination detection) and,
+    * Prokka (annotation).
 
 *The present focus is on storing and manipulating the results of SNP and 
 recombination analysis.*
 
 **Banzai is not a stable API.** 
+
+See the ReadTheDocs site for `BanzaiDB documentation`_ (User & API).
+
+
+About RethinkDB
+---------------
+
+We choose RethinkDB_ as our underlying database for a few reasons:
+    * RethinkDB is both developer and operations friendly. This sits well with 
+      the typical bioinforatician,
+    * NoSQL databases allow for a felxible schema. We can store/collect now, 
+      think later. This is much like how science is performed.
+    * Not every bioinformatician or lab has a system administrator. RethinkDB 
+      is easy to setup and administer
+    * We don't know how big our complex our datasets could get in the future. 
+      It is easy to scale RethinkDB into a cluster.
+    * ReQL the underlying query language is nice and simple to
+      learn/understand. We're also very confortable with Python and the 
+      availability of official python drivers (also javascript & ruby, and a 
+      heap for user contributed for a swag of languages) is a big bonus.
 
 
 Requirements
@@ -63,6 +86,8 @@ To increase the rethinkdb client performance performance::
     $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 
 
+
+
 Assumptions
 -----------
 
@@ -81,7 +106,24 @@ and have successfully install BanzaiDB.
 
 
 
+
+
+Default BanzaiDB table schema
+-----------------------------
+
+On intialisation the following database tables will be generated:
+    
+    * strains,
+    * metadata
+    * variants,
+    * ref
+    * ref_features
+
+More information can be found in tables.rst
+
+
 .. _RethinkDB: http://www.rethinkdb.com
 .. _NoSQL: http://nosql-database.org
 .. _Banzai NGS pipeline: https://github.com/mscook/Banzai-MicrobialGenomics-Pipeline
+.. _BanzaiDB documentation: http://banzaidb.readthedocs.org
 
