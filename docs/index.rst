@@ -51,3 +51,8 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+
+.. _RethinkDB: http://www.rethinkdb.com
+.. _NoSQL: http://nosql-database.org
