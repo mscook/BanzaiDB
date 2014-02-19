@@ -20,7 +20,21 @@ Why BanzaiDB?
 Downstream analysis (secondary/tertiary) of large collections of draft 
 microbial genomes typically generates many separate flat files. The 
 bioinformatician will:
-    * write scripts to parse and extract the important information
+    * write scripts to parse and extract the important information from 
+      the results files (often trying to standardise the output from 
+      similar programs),
+    * store these results in further flat files,
+    * write scripts to link the results of one analysis step to another,
+    * store these results in further flat files,
+    * modify scripts as hypothesis is improved as a direct consequence of
+      incorporating the knowledge from the previous steps,
+    * ... ,
+    * ... ,
+    * ... ,
+    * end up with thousands of flat files, many many scripts and generally get 
+      confused as to how and where everything came from.
+
+The idea around BanzaiDB is to run once, store once anlyse many times.
 
 
 About BanzaiDB
