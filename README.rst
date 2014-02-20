@@ -42,8 +42,9 @@ About BanzaiDB
 --------------
 
 BanzaiDB is geared towards outputs of Bioinformatics software employed by 
-the `Banzai NGS pipeline`_. It is thus geared towards handling data generated 
-from:
+the `Banzai NGS pipeline`_. 
+
+BanzaiDB is thus geared towards handling data generated from:
     * Velvet and SPAdes (assembly), 
     * BWA and Nesoni (mapping/variant calling),
     * Mugsy (whole genome alignment), 
@@ -153,7 +154,6 @@ Default BanzaiDB table schema
 -----------------------------
 
 On intialisation the following database tables will be generated:
-    
     * strains,
     * metadata
     * variants,
