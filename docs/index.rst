@@ -22,6 +22,7 @@ Learn how to initalise a database, populate the database and query it!
 .. toctree::
    :maxdepth: 1
 
+   installation.rst 
    getting-metadata-into-banzaiDB.rst
 
 API documentation
