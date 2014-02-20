@@ -1,7 +1,7 @@
 .. image:: https://raw.github.com/mscook/BanzaiDB/master/misc/BanzaiDB.png
     :alt: BanzaiDB logo
 
-
+|
 
 .. image:: http://gitshields.com/v2/text/API/Unstable/red.png
 
