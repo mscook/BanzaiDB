@@ -120,6 +120,32 @@ and have successfully install BanzaiDB.
 
 
 
+Usage
+-----
+
+Something like this::
+
+    $ python BanzaiDB.py -h
+    usage: BanzaiDB.py [-h] [-v] {init,populate,update,query} ...
+
+    BanzaiDB v0.1 - Database for Banzai NGS pipeline tool
+    (http://github.com/mscook/BanzaiDB)
+
+    positional arguments:
+      {init,populate,update,query}
+                            Available commands:
+        init                Initialise a DB
+        populate            Populates a database with results of an experiment
+        update              Updates a database with results from a new experiment
+        query               List available or provide database query functions
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -v, --verbose         verbose output
+
+    Licence: ECL 2.0 by Mitchell Stanton-Cook <m.stantoncook@gmail.com>
+
+
 
 
 Default BanzaiDB table schema
