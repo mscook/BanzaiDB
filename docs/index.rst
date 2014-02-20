@@ -23,6 +23,7 @@ Learn how to initalise a database, populate the database and query it!
    :maxdepth: 1
 
    installation.rst 
+   init.rst
    getting-metadata-into-banzaiDB.rst
 
 API documentation
