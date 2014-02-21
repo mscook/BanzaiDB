@@ -1,7 +1,7 @@
 Initialising your first BanzaiDB database
 =========================================
 
-Initalising a BanzaiDB involves having BanzaiDB connect to your RethinkDB 
+Initialising a BanzaiDB involves having BanzaiDB connect to your RethinkDB 
 instance. Once connected BanzaiDB creates a database and initialises some 
 default tables.
 
