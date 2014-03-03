@@ -4,14 +4,19 @@
 |
 
 .. image:: http://gitshields.com/v2/text/API/Unstable/red.png
+   :alt: API stability
 
 |
 
 .. image:: http://gitshields.com/v2/drone/github.com/mscook/BanzaiDB/brightgreen-red.png
+   :target: https://drone.io/github.com/mscook/BanzaiDB
+   :alt: Build status (Drone.io)
 
 |
 
-.. image:: https://landscape.io/github/mscook/BanzaiDB/master/badges
+.. image:: https://landscape.io/github/mscook/BanzaiDB/master/landscape.png
+   :target: https://landscape.io/github/mscook/BanzaiDB/master
+   :alt: Code Health
 
 
 What is BanzaiDB?
