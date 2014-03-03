@@ -9,6 +9,10 @@
 
 .. image:: http://gitshields.com/v2/drone/github.com/mscook/BanzaiDB/brightgreen-red.png
 
+|
+
+.. image:: https://landscape.io/github/mscook/BanzaiDB/master/badges
+
 
 What is BanzaiDB?
 -----------------
