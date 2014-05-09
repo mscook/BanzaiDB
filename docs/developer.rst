@@ -5,7 +5,7 @@ Maintaining a consistent development environment
 -------------------------------------------------
 
 
-*1)* Ensure all development in performed within a virtualenv. A good way too 
+**1)** Ensure all development in performed within a virtualenv. A good way too 
 bootstrap this is via `virtualenv-burrito`_.
 
 Execute the installation using::
@@ -13,12 +13,12 @@ Execute the installation using::
     $ curl -sL https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh | $SHELL
 
 
-*2* Make a virtualenv called BanzaiDB::
+**2)** Make a virtualenv called BanzaiDB::
 
     $ mkvirtualenv BanzaiDB
 
 
-*3)* Install autoenv_::
+**3)** Install autoenv_::
     
     $ git clone git://github.com/kennethreitz/autoenv.git ~/.autoenv
     $ echo 'source ~/.autoenv/activate.sh' >> ~/.bashrc
@@ -27,7 +27,7 @@ Execute the installation using::
 Get the current code from GitHub
 --------------------------------
 
-Something like this:
+Something like this::
 
     $ cd $PATH_WHERE_I_KEEP_MY_REPOS
     $ git clone https://github.com/mscook/BanzaiDB.git
@@ -35,6 +35,8 @@ Something like this:
 
 Install dependencies
 --------------------
+
+Something like this::
 
     $ cd BanzaiDB
     $ # You'll want to say 'y' as this will activate the virtualenv each time you enter the code directory
