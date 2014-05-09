@@ -6,7 +6,7 @@ Maintaining a consistent development environment
 
 
 **1)** Ensure all development in performed within a virtualenv. A good way too 
-bootstrap this is via `virtualenv-burrito`_.
+bootstrap this is via virtualenv-burrito_.
 
 Execute the installation using::
     
@@ -105,5 +105,5 @@ You can list them like this::
 
 
 
-.. _ `virtualenv-burrito`: https://github.com/brainsik/virtualenv-burrito
+.. _virtualenv-burrito: https://github.com/brainsik/virtualenv-burrito
 .. _autoenv: https://github.com/kennethreitz/autoenv
