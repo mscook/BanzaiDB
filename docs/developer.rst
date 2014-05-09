@@ -46,7 +46,8 @@ Something like this::
 Familiarise yourself with the code
 ----------------------------------
  
-The BanzaiDB/BanzaiDB.py is the core module. It handles database insertion, deletion and updating.
+The BanzaiDB/BanzaiDB.py is the core module. It handles database insertion, 
+deletion and updating.
 
 For example::
 
@@ -85,7 +86,8 @@ Listing help on populate::
 
 
 
-The fabfile (Fabric file) in fabfile directory contains query pre-written functions. 
+The fabfile (Fabric file) in fabfile directory contains query pre-written 
+functions. 
 
 You can list them like this::
 
@@ -101,9 +103,46 @@ You can list them like this::
         variants.what_differentiates_strains       Provide variant positions that differentiate two given sets of strains
 
 
-*Note:* python BanzaiDB.py query simply call the fabfile discussed above. 
+**Note:** python BanzaiDB.py query simply call the fabfile discussed above. 
 
 
+Development workflow
+--------------------
+
+Use GitHub. You will have already cloned the BanzaiDB repo (if you followed 
+instructions above). To make things easier, please fork 
+(https://github.com/mscook/BanzaiDB/fork) and update your local copy to point to 
+your fork.
+
+Something like this::
+
+    $ #Assuming your fork is like this
+    $ #https://github.com/$YOUR_USERNAME/BanzaiDB/
+    $ vi .git/config
+    $ #Replace:
+	$ url = git@github.com:mscook/BanzaiDB.git
+    $ #with:
+    $ url = git@github.com:$YOUR_USERNAME/BanzaiDB.git
+
+With this setup you will be able to push development changes to your fork and 
+submit Pull Requests to the core BanzaiDB repo when you're happy. 
+
+**Important Note:** Upstream changes will not be synced to your fork by 
+default. Please, before submitting a pull request please sync your fork with 
+any upstream changes (specifically handle any merge conflicts). Info on 
+syncing a fork can be found here_.
+
+
+Code style
+----------
+
+As close to PEP8 as possible but I aint no Saint/Angel. Just a long as it's 
+clean and readable.
+
+I prefer to use doctests for testing as it kills two birds with one stone 
+(testing and use case documentation). See a doctest_ tutorial.
 
 .. _virtualenv-burrito: https://github.com/brainsik/virtualenv-burrito
 .. _autoenv: https://github.com/kennethreitz/autoenv
+.. _here: https://help.github.com/articles/syncing-a-fork
+.. _doctest: http://pythontesting.net/framework/doctest/doctest-introduction/
