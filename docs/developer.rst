@@ -1,3 +1,107 @@
 BanzaiDB Developer HOWTO
 ========================
 
+Maintaining a consistent development environment
+-------------------------------------------------
+
+
+*1)* Ensure all development in performed within a virtualenv. A good way too 
+bootstrap this is via `virtualenv-burrito`_.
+
+Execute the installation using::
+    
+    $ curl -sL https://raw.githubusercontent.com/brainsik/virtualenv-burrito/master/virtualenv-burrito.sh | $SHELL
+
+
+*2* Make a virtualenv called BanzaiDB::
+
+    $ mkvirtualenv BanzaiDB
+
+
+*3)* Install autoenv_::
+    
+    $ git clone git://github.com/kennethreitz/autoenv.git ~/.autoenv
+    $ echo 'source ~/.autoenv/activate.sh' >> ~/.bashrc
+
+
+Get the current code from GitHub
+--------------------------------
+
+Something like this:
+
+    $ cd $PATH_WHERE_I_KEEP_MY_REPOS
+    $ git clone https://github.com/mscook/BanzaiDB.git
+
+
+Install dependencies
+--------------------
+
+    $ cd BanzaiDB
+    $ # You'll want to say 'y' as this will activate the virtualenv each time you enter the code directory
+    $ pip install -r requirements.txt
+
+
+Familiarise yourself with the code
+----------------------------------
+ 
+The BanzaiDB/BanzaiDB.py is the core module. It handles database insertion, deletion and updating.
+
+For example::
+
+    $ ~/BanzaiDB/BanzaiDB$ python BanzaiDB.py -h
+    usage: BanzaiDB.py [-h] [-v] {init,populate,update,query} ...
+
+    BanzaiDB v0.1 - Database for Banzai NGS pipeline tool (http://github.com/mscook/BanzaiDB)
+
+    positional arguments:
+      {init,populate,update,query}
+                            Available commands:
+        init                Initialise a DB
+        populate            Populates a database with results of an experiment
+        update              Updates a database with results from a new experiment
+        query               List available or provide database query functions
+
+    optional arguments:
+        -h, --help            show this help message and exit
+        -v, --verbose         verbose output
+
+    Licence: ECL 2.0 by Mitchell Stanton-Cook <m.stantoncook@gmail.com>
+
+
+Listing help on populate::
+
+    $ python BanzaiDB.py populate -h
+    usage: BanzaiDB.py populate [-h] {qc,mapping,assembly,ordering,annotation} run_path
+
+    positional arguments:
+      {qc,mapping,assembly,ordering,annotation}
+                        Populate the database with data from the given pipeline step
+        run_path              Full path to a directory containing finished experiments from a pipeline run
+
+    optional arguments:
+        -h, --help            show this help message and exit
+
+
+
+The fabfile (Fabric file) in fabfile directory contains query pre-written functions. 
+
+You can list them like this::
+
+    $ ~/BanzaiDB$ fab -l
+    Available commands:
+
+        variants.get_variants_by_keyword           Return variants with a match in the "Product" with the regular_expression
+        variants.get_variants_in_range             Return all the variants in given [start:end] range (inclusive of)
+        variants.plot_variant_positions            Generate a PDF of SNP positions for given strains using GenomeDiagram
+        variants.strain_variant_stats              Print the number of variants and variant classes for all strains
+        variants.variant_hotspots                  Return the (default = 100) prevalent variant positions
+        variants.variant_positions_within_atleast  Return positions that have at least this many variants
+        variants.what_differentiates_strains       Provide variant positions that differentiate two given sets of strains
+
+
+*Note:* python BanzaiDB.py query simply call the fabfile discussed above. 
+
+
+
+.. _ `virtualenv-burrito`: https://github.com/brainsik/virtualenv-burrito
+.. _autoenv: https://github.com/kennethreitz/autoenv
