@@ -17,7 +17,7 @@ import sys
 
 class BanzaiDBConfig():
     """
-    BanzaiDB configuration class 
+    BanzaiDB configuration class
     """
 
     def __init__(self):
@@ -39,22 +39,25 @@ class BanzaiDBConfig():
         Read a BanzaiDB configuration file
 
         Currently only supports:
-            * db_host =  [def = localhost]
-            * port    =  [def = 28015]
-            * db_name =  [def = Banzai]
+            * db_host  =  [def = localhost]
+            * port     =  [def = 28015]
+            * db_name  =  [def = Banzai]
+            * auth_key =  [def = '']
         """
         cfg = {}
-        cfg['db_host'] = 'localhost'
-        cfg['port']    = 28015
-        cfg['db_name'] = 'Banzai'
+        cfg['db_host']  = 'localhost'
+        cfg['port']     = 28015
+        cfg['db_name']  = 'Banzai'
+        cfg['auth_key'] = ''
         try:
             with open(os.path.expanduser('~/')+'.BanzaiDB.cfg') as fin:
                 #sys.stderr.write("Using a BanzaiDB config file\n")
                 colors = []
                 for line in fin:
-                    if (line.startswith('db_host')  or 
+                    if (line.startswith('db_host')  or
                             line.startswith('port') or
-                            line.startswith('db_name')):
+                            line.startswith('db_name') or
+                            line.startswith('auth_key')):
                         option, val = line.split('=')
                         cfg[option.strip()] = val.strip()
         except IOError:
