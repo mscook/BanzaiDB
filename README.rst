@@ -83,7 +83,7 @@ About RethinkDB
 We choose RethinkDB_ as our underlying database for a few reasons:
     * RethinkDB is both developer and operations friendly. This sits well with 
       the typical bioinformatician,
-    * NoSQL databases allow for a felxible schema. We can store/collect now, 
+    * NoSQL databases allow for a flexible schema. We can store/collect now, 
       think later. This is much like how science is performed.
     * Not every bioinformatician or lab has a system administrator. RethinkDB 
       is easy to setup and administer
@@ -133,7 +133,7 @@ Something like this::
 Getting BanzaiDB talking to RethinkDB
 -------------------------------------
 
-You provide information about you RethinDB instance and database using the 
+You provide information about you RethinkDB instance and database using the 
 file **~/.BanzaiDB.cfg** (~/ ).
 
 The configuration file supports::
@@ -148,7 +148,7 @@ BanzaiDB usage
 --------------
 
 **Note:** Please refer to the `BanzaiDB documentation`_ (via ReadTheDocs) for 
-more detailed information (under active developement).
+more detailed information (under active development).
 
 Once both RethinkDB and BanzaiDB are installed and the configuration is set::
 
