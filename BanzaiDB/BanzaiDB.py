@@ -22,9 +22,7 @@ import rethinkdb as r
 from   rethinkdb.errors import RqlRuntimeError, RqlDriverError
 
 import config
-import database
 import core
-import query_functions
 
 """
 BanzaiDB
