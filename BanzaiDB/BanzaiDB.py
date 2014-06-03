@@ -13,35 +13,30 @@
 # or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-
 import sys, os, traceback, argparse, time
 
+import glob
+import re
 
 import rethinkdb as r
 from   rethinkdb.errors import RqlRuntimeError, RqlDriverError
 
-import glob
-import pickle
-import re
-
 import config
 import database
 import core
-import fetch
 import query_functions
-import misc
-import imaging
 
 """
 BanzaiDB
 ========
 
-Query Banzai NGS pipeline results intelligently and efficiently
+BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing
+(NGS) analysis with a NoSQL database. We use the RethinkDB NoSQL database.
 """
 
 __title__         = 'BanzaiDB'
 __version__       = '0.1'
-__description__   = "Database for Banzai NGS pipeline tool"
+__description__   = "Database tool for the Banzai NGS pipeline"
 __author__        = 'Mitchell Stanton-Cook'
 __author_email__  = 'm.stantoncook@gmail.com'
 __url__           = 'http://github.com/mscook/BanzaiDB'
@@ -216,90 +211,6 @@ def updateDB(args):
     sys.exit(1)
 
 
-def queryDB(args):
-    """
-    Examples:
-        * db.collection.find( <query>, <projection> )
-        * #database.create_search_index(cfg, 'VARIANTS', 'CDS')
-    """
-    cfg = config.BanzaiDBConfig()
-    try:
-        connection = r.connect(host=cfg['db_host'], port=cfg['port'],
-                            db=cfg['db_name'])
-    except RqlDriverError:
-        print "No database connection could be established."
-    exit()
-    ### Howto plot SNPS
-    ##SNP_positions = query_functions.get_SNP_positions(cfg, 'S77EC', [1, 1000000])
-    ##feat = []
-    ##for pos in SNP_positions:
-    #    feat.append(misc.create_feature(pos, pos, "SNP", strand=None))
-    ##imaging.plot_SNPs(feat)
-    ### Howto get CDS core alignment
-    query_functions.get_core_alignment(cfg)
-    sys.exit()
-    if not os.path.isfile(cfg['db_all']+'.ns'):
-        print "Database missing. Please use create"
-        sys.exit(1)
-    if args.mongo != '':
-        pass
-    elif args.locus_tag != '':
-        from collections import Counter
-        # Get all required collections
-        snp_coll = database.get_collection(cfg, 'VARIANTS')
-        ref_features_coll = database.get_collection(cfg, 'REF_FEAT')
-        strains_coll = database.get_collection(cfg, 'STRAINS')
-        # Get all stored strains and store
-        strains = []
-        for strain in strains_coll.find({}, {"StrainID" : 1, "_id" : 0}):
-            strains.append(strain.values()[0])
-        # Get the CDS sequence, product for refernce(LocusTag) and store
-        dat = ref_features_coll.find_one({"LocusTag": args.locus_tag}, {"Sequence" : 1, "Product" : 1, "_id" : 0})
-        sequence = list(dat['Sequence'])
-        product  = dat['Product']
-        # Find all SNPs with given LocusTag for given strain. Use PQL
-        for strain in strains:
-            occur_pos, occur_type, occur_stype, occur_strain = [], [], [], []
-            query =  pql.find("StrainID == '"+strain+"' and LocusTag == '"+args.locus_tag+"'")
-            # Build up the allele sequence
-            cur_seq = list(sequence)
-            for idx, snp in enumerate(snp_coll.find(query)):
-                # Sanity check
-                #print snp
-                if snp['RefBase'] != sequence[snp['CDSBaseNum']-1]:
-                    print "Error- Sanity check failed"
-                else:
-                    cur_seq[snp['CDSBaseNum']-1] = snp['ChangeBase']
-            print ">%s %s (%s)" % (strain, args.locus_tag, product)
-            print ''.join(cur_seq)
-            #    occur_pos.append(snp['CDSBaseNum'])
-            #    occur_type.append(snp['Class'])
-            #    occur_stype.append(snp['SubClass'])
-            #    occur_strain.append(snp['StrainID'])
-            #tv = idx+1
-            #print "General Statistics: %s (%s)" % (args.locus_tag, product)
-            #print 40*'-'
-            #print "Total variants: %i" % (tv)
-            #classes = Counter(occur_type)
-            #k, v = classes.keys(), classes.values()
-            #print "Variant class population:"
-            #for idx, e in enumerate(k):
-            #    print "\t"+e , (v[idx]/float(tv))*100
-            #print Counter(occur_pos)
-        #print Counter(occur_stype)
-        #print Counter(occur_strain)
-        #db.users.find({'name': {'$regex': 'sometext'}})
-        #print snp
-        #ref_meta = database.get_collection(cfg, 'REF_FEAT')
-        #
-        #x = ref_meta.find({"LocusTag": args.locus_tag})
-        #for e in x:
-        #    print e
-
-    else:
-        "No query provided"
-
-
 def db_query(args):
     """
     List available (via fab) or provide a ReQL query function
@@ -309,9 +220,10 @@ def db_query(args):
         print 'Data can be queried using the following:'
         os.system("fab -l")
         sys.exit()
-    if arg.ReQL != '':
+    if args.ReQL != '':
         print "Not implemented yet"
         sys.exit()
+
 
 if __name__ == '__main__':
     try:
