@@ -116,8 +116,8 @@ The Python modules should/will be pulled down automatically when installing
 BanzaiDB.
 
 We recommend you increase the rethinkdb python `driver performance`_. We have 
-found that in some cases the installation of C++ backend fails. We provide 
-a simple protocol that we have found works (see: misc/python_C++_driver.sh).
+found that in some cases the installation of C++ backend fails. `We provide`_ 
+a simple protocol that we have found works.
 
 
 BanzaiDB Installation
@@ -134,7 +134,7 @@ Getting BanzaiDB talking to RethinkDB
 -------------------------------------
 
 You provide information about you RethinkDB instance and database using the 
-file **~/.BanzaiDB.cfg** (~/ ).
+file **~/.BanzaiDB.cfg** (~/ is shorthand for $HOME).
 
 The configuration file supports::
 
@@ -180,4 +180,4 @@ Once both RethinkDB and BanzaiDB are installed and the configuration is set::
 .. _BanzaiDB documentation: http://banzaidb.readthedocs.org
 .. _driver performance: http://www.rethinkdb.com/docs/driver-performance/
 .. _pip: http://pip.readthedocs.org/en/latest/installing.html
-
+.. _We provide: https://raw.githubusercontent.com/mscook/BanzaiDB/master/misc/python_C++_driver.sh
