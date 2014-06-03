@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2013 Mitchell Stanton-Cook Licensed under the
+# Copyright 2013-2014 Mitchell Stanton-Cook Licensed under the
 # Educational Community License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may
 # obtain a copy of the License at
@@ -16,11 +16,13 @@
 
 import sys, os, traceback, argparse, time
 
+
 import rethinkdb as r
 from   rethinkdb.errors import RqlRuntimeError, RqlDriverError
 
 import glob
 import pickle
+import re
 
 import config
 import database
@@ -56,12 +58,25 @@ __doc__ = " %s v%s - %s (%s)" % ( __title__,
 
 def make_connection():
     """
-    Make a connection to the RethinkDB
+    Make a connection to the RethinkDB database
+
+    Pulls settings (host, port, database name & auth_key from
+    BanzaiDBConfig())
+
+    ..note::
+
+        The RethinkDB connection is a context manager. Thus use this
+        funtion like 'with make_connection():'
+
+    :returns: a connection context manager
     """
     cfg = config.BanzaiDBConfig()
+    if not re.match("^[a-zA-Z0-9_]+$", cfg['db_name']):
+        print "Database name must be %s " % ("A-Za-z0-9_")
+        sys.exit(1)
     try:
-        connection = r.connect(host=cfg['db_host'], port=cfg['port'], 
-                            db=cfg['db_name'])
+        connection = r.connect(host=cfg['db_host'], port=cfg['port'],
+                            db=cfg['db_name'], auth_key=cfg['auth_key'])
     except RqlDriverError:
         print "No database connection could be established."
         sys.exit(1)
@@ -71,123 +86,149 @@ def make_connection():
 def init_database_with_default_tables(args):
     """
     Create a new RethinkDB database
+
+    :param args: an argparse argument (force)
     """
     # Add additional (default) tables here...
     def_tables = ['variants', 'strains', 'ref', 'ref_feat']
-    cfg = config.BanzaiDBConfig()
-    connection = r.connect(host=cfg['db_host'], port=cfg['port'])
-    try:
-        r.db_create(cfg['db_name']).run(connection)
-        for atable in def_tables:
-            r.db(cfg['db_name']).table_create(atable).run(connection)
-    except RqlRuntimeError:
-        print "Database %s already exists. " % (cfg['db_name'])
-        if args.force:
-            print "Reinitialising %s" % (cfg['db_name'])
-            r.db_drop(cfg['db_name']).run(connection)
-            r.db_create(cfg['db_name']).run(connection)
+    with make_connection() as connection:
+        try:
+            r.db_create(connection.db).run(connection)
             for atable in def_tables:
-                r.db(cfg['db_name']).table_create(atable).run(connection)
-        else:
-            connection.close()
-            sys.exit(1)
-    print ("Initalised database %s. %s contains the following tables: "
-            "%s" % (cfg['db_name'], cfg['db_name'], ', '.join(def_tables)))
-    connection.close()
+                r.db(connection.db).table_create(atable).run(connection)
+        except RqlRuntimeError:
+            print ("Database %s already exists. Use '--force' option to "
+                   "reinitialise the database." % (connection.db))
+            if args.force:
+                print "Reinitialising %s" % (connection.db)
+                r.db_drop(connection.db).run(connection)
+                r.db_create(connection.db).run(connection)
+                for atable in def_tables:
+                    r.db(connection.db).table_create(atable).run(connection)
+            else:
+                sys.exit(1)
+        print ("Initalised database %s. %s contains the following tables: "
+                "%s" % (connection.db, connection.db, ', '.join(def_tables)))
 
 
 def populate_database_with_data(args):
     """
     Populate the RethinkDB
+
+    This is essentially a placeholder that directs the input data to its
+    specific populate method.
+
+    :param args: an argparse argument (run_type)
     """
-    
+
     if args.run_type == 'mapping':
         populate_mapping(args)
+    else:
+        print "Only support mapping data at the moment"
+        sys.exit(1)
     sys.exit()
-    
 
 
 def populate_qc():
-    pass
+    """
+    Populate the database with a QC run
+    """
+    print "NotImplemented yet!"
+    sys.exit(1)
 
 
 def populate_mapping(args):
     """
-    Populate database with Nesoni mapping run
+    Populate database with a mapping run. Only support for Nesoni at the moment
+
+    TODO: This should also handle BWA. Will need to differentiate between
+    Nesoni & BWA runs and handle VCF files.
+
+    For speed faster DB inserts-
+        * batch size should be about 200 docs,
+        * increase concurrency
+        * durability="soft" (will miss data if inserting where power off)
+        * run(durability="soft", noreply=True) == danger!
+
+    :param args: an argparse argument (run_path) which is the full path as a
+                 string to the Banzai run (inclusive of $PROJECTBASE). For
+                 example: /$PROJECTBASE/map/$REF.2014-04-28-mon-16-41-51
     """
-    connection = make_connection()
-    clean_path = os.path.normpath(os.path.expanduser(args.run_path))
-    search     = clean_path.split('/')[-1]
-    clean_path = clean_path+'/pbs/'
-    ref, output = '', []
-    infiles = glob.glob(clean_path+"*"+search+"*")
-    for idx, file in enumerate(infiles):
-        with open(file) as fin:
-            fin.readline()
-            fin.readline()
-            cur = fin.readline().split(' ')[-1].strip()+'/report.txt'
-            output.append(cur)
-            if idx == 0:
-                ref = fin.readline().split(' ')[-2]+'/reference.gbk'
-    # Have all the reports & reference now
-    for report in output:
-        parsed = core.nesoni_report_to_JSON(report)
-        count = len(parsed)
-        if count != 0:
-            # For speed inserts- 
-            #   batch size should be about 200 docs, 
-            #   increase concurrency
-            #   durability="soft"
-            #   run(durability="soft", noreply=True)
-            inserted = r.table('variants').insert(parsed).run(connection)
-            strain_JSON = {"StrainID": parsed[0]['StrainID'],
-                          "VarCount": count,
-                          "id": parsed[0]['StrainID']}
-            inserted = r.table('strains').insert(strain_JSON).run(connection)
-        else:
-            print "No variants for %s. Skipped" % (report)
-            s = report.split('/')[-2]
-            strain_JSON = {"StrainID" : s,
-                          "VarCount" : 0,
-                          "id" : s}
-            inserted = r.table('strains').insert(strain_JSON).run(connection)
-    # Now, do the reference
-    ref, ref_meta = core.reference_genome_features_to_JSON(ref)
-    inserted = r.table('ref').insert(ref).run(connection)
-    inserted = r.table('ref_feat').insert(ref_meta).run(connection)
-    connection.close()
+    run_path = os.path.normpath(os.path.expanduser(args.run_path))
+    # TODO - handle '.' in reference
+    ref = run_path.split('/')[-1].split('.')[0]
+    infiles = glob.glob(run_path+'/*/report.txt')
+    ref = os.path.join(run_path+'/', ref+'/reference.gbk')
+    with make_connection() as connection:
+        for report in infiles:
+            parsed = core.nesoni_report_to_JSON(report)
+            count = len(parsed)
+            if count != 0:
+                inserted = r.table('variants').insert(parsed).run(connection)
+                strain_JSON = {"StrainID": parsed[0]['StrainID'],
+                            "VarCount": count,
+                            "id": parsed[0]['StrainID']}
+                inserted = r.table('strains').insert(strain_JSON).run(connection)
+            else:
+                print "No variants for %s. Skipped" % (report)
+                s = report.split('/')[-2]
+                strain_JSON = {"StrainID" : s,
+                            "VarCount" : 0,
+                            "id" : s}
+                inserted = r.table('strains').insert(strain_JSON).run(connection)
+        # Now, do the reference
+        ref, ref_meta = core.reference_genome_features_to_JSON(ref)
+        inserted = r.table('ref').insert(ref).run(connection)
+        inserted = r.table('ref_feat').insert(ref_meta).run(connection)
+
 
 def populate_assembly():
-    pass
+    """
+    Populate the database with an assembly run
+    """
+    print "NotImplemented yet!"
+    sys.exit(1)
+
 
 def populate_ordering():
-    pass
+    """
+    Populate the database with an ordering run
+    """
+    print "NotImplemented yet!"
+    sys.exit(1)
+
 
 def populate_annotation():
-    pass
-
-
+    """
+    Populate the database with an ordering run
+    """
+    print "NotImplemented yet!"
+    sys.exit(1)
 
 
 def updateDB(args):
     """
-    Not implemented yet!
+    Update a DB -> should this be possible?
+
+    Perhaps update should mean add a "run" and make it the active one?
     """
-    pass
+    print "NotImplemented yet!"
+    sys.exit(1)
+
 
 def queryDB(args):
     """
     Examples:
-        * db.collection.find( <query>, <projection> ) 
+        * db.collection.find( <query>, <projection> )
         * #database.create_search_index(cfg, 'VARIANTS', 'CDS')
     """
     cfg = config.BanzaiDBConfig()
     try:
-        connection = r.connect(host=cfg['db_host'], port=cfg['port'], 
+        connection = r.connect(host=cfg['db_host'], port=cfg['port'],
                             db=cfg['db_name'])
     except RqlDriverError:
         print "No database connection could be established."
-    exit() 
+    exit()
     ### Howto plot SNPS
     ##SNP_positions = query_functions.get_SNP_positions(cfg, 'S77EC', [1, 1000000])
     ##feat = []
@@ -278,7 +319,7 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(description=__doc__, epilog=epi)
         parser.add_argument('-v', '--verbose', action='store_true',
                                         default=False, help='verbose output')
-        subparsers = parser.add_subparsers(help='Available commands:') 
+        subparsers = parser.add_subparsers(help='Available commands:')
         init_parser   = subparsers.add_parser('init', help='Initialise a DB')
         init_parser.add_argument('--force', action='store_true',
                     default=False, help=('Reinitilise a database & tables '
@@ -286,26 +327,26 @@ if __name__ == '__main__':
         populate_parser = subparsers.add_parser('populate', help=('Populates '
                             'a database with results of an experiment'))
         populate_parser.add_argument('run_type',action='store',
-                    choices=('qc', 'mapping', 'assembly', 'ordering', 
+                    choices=('qc', 'mapping', 'assembly', 'ordering',
                             'annotation'),
                     help=('Populate the database with data from the given '
                           'pipeline step'))
         populate_parser.add_argument('run_path',action='store',
-                    help=('Full path to a directory containing finished ' 
+                    help=('Full path to a directory containing finished '
                         'experiments from a pipeline run'))
         update_parser = subparsers.add_parser('update', help=('Updates a '
                         'database with results from a new experiment'))
         update_parser.add_argument('run_type',action='store',
-                    choices=('qc', 'mapping', 'assembly', 'ordering', 
+                    choices=('qc', 'mapping', 'assembly', 'ordering',
                             'annotation'),
                     help=('Populate the database with data from the given '
                           'pipeline step'))
         update_parser.add_argument('run_path',action='store',
-                    help=('Full path to a directory containing finished ' 
+                    help=('Full path to a directory containing finished '
                         'experiments from a pipeline run'))
         query_parser = subparsers.add_parser('query', help=('List available '
                             'or provide database query functions'))
-        query_parser.add_argument('-l', '--list', action='store_true', 
+        query_parser.add_argument('-l', '--list', action='store_true',
                     default=False, help='List the pre-defined queries')
         query_parser.add_argument('-r','--ReQL',action='store', default='',
                     help='A ReQL statement')
