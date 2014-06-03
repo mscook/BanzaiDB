@@ -22,6 +22,8 @@ __author_email__  = 'm.stantoncook@gmail.com'
 __url__           = 'http://github.com/mscook/BanzaiDB'
 __license__       = 'ECL 2.0'
 
+
+# Helper functions
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
@@ -29,6 +31,11 @@ if sys.argv[-1] == 'publish':
 if sys.argv[-1] == 'clean':
     os.system('rm -rf BanzaiDB.egg-info build dist')
     sys.exit()
+
+if sys.argv[-1] == 'docs':
+    os.system('cd docs && make html')
+    sys.exit()
+
 
 packages = [__title__,]
 
