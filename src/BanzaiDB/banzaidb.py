@@ -214,9 +214,12 @@ def db_query(args):
     List available (via fab) or provide a ReQL query function
     """
     if args.list:
-        sys.path.insert(0, "../")
-        print 'Data can be queried using the following:'
-        os.system("fab -l")
+        fab_loc = os.path.dirname(os.path.realpath(__file__)).split(
+            "EGG-INFO/scripts")[0]+'BanzaiDB/fabfile/'
+        os.system("fab -f '"+fab_loc+"' -l")
+        print '\n\nData can be queried using the following:\n'
+        print "\t fab -f '"+fab_loc+"' $COMMAND"
+
         sys.exit()
     if args.ReQL != '':
         print "Not implemented yet"
