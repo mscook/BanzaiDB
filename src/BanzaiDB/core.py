@@ -11,9 +11,9 @@
 # or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-
-import parsers
 from Bio import SeqIO
+
+from BanzaiDB import parsers
 
 
 def nesoni_report_to_JSON(report_file):
@@ -46,7 +46,7 @@ def nesoni_report_to_JSON(report_file):
                     # 0      1         2       3    4      5       6      7
                     #class|sub_type|locus_tag|base|codon|region|old_aa|new_aa|
                     #   8        9
-                    #protein|correlated 
+                    #protein|correlated
                     dat = ('substitution',) + parsers.parse_substitution(cons)
                 elif type.find("insertion") != -1:
                     dat = ('insertion', None) + parsers.parse_insertion(cons)
@@ -60,13 +60,13 @@ def nesoni_report_to_JSON(report_file):
                 dat[4] = int(dat[4])
             elif cons.strip() != '' and cons.split(' ')[0] in misc_set:
                 if type.find("substitution") != -1:
-                    dat = (('substitution',) + 
+                    dat = (('substitution',) +
                                     parsers.parse_substitution_misc(cons))
                 elif type.find("insertion") != -1:
-                    dat = (('insertion', None) + 
+                    dat = (('insertion', None) +
                                     parsers.parse_insertion_misc(cons))
                 elif type.find("deletion") != -1:
-                    dat = (('deletion', None) + 
+                    dat = (('deletion', None) +
                                     parsers.parse_deletion_misc(cons))
                 else:
                     raise Exception("Unsupported. Only SNPs & INDELS")
@@ -75,8 +75,8 @@ def nesoni_report_to_JSON(report_file):
             else:
                 dat = [type.split('-')[0]]+[None]*9
             json = {"id" : strain+'_'+ref_id+'_'+pos,
-                    "StrainID" : strain, 
-                    "Position" : int(pos), 
+                    "StrainID" : strain,
+                    "Position" : int(pos),
                     "LocusTag" : dat[2],
                     "Class" : dat[0],
                     "SubClass" : dat[1],
@@ -98,12 +98,12 @@ def nesoni_report_to_JSON(report_file):
 def reference_genome_features_to_JSON(genome_file):
     """
     From genome reference (GBK format) convert CDS & xRNA features to JSON
-   
+
     See: tables.rst
 
     :param genome_file: the fullpath as a string to the genbank file
 
-    :returns: a JSON representing the the reference and a list of JSON 
+    :returns: a JSON representing the the reference and a list of JSON
               containing information on the features
     """
     misc_set = ['tRNA', 'rRNA']
