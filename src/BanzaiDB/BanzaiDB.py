@@ -21,8 +21,8 @@ import re
 import rethinkdb as r
 from   rethinkdb.errors import RqlRuntimeError, RqlDriverError
 
-import config
-import core
+from BanzaiDB import config
+from BanzaiDB import core
 
 """
 BanzaiDB
