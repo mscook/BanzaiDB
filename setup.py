@@ -2,43 +2,78 @@
 
 import os
 import sys
+import glob
 
-import BanzaiDB.__init__ as meta
-
+# Try and import pip. We'll stop if it is not present
 try:
-    from setuptools import setup
+    import pip
 except ImportError:
-    from distutils.core import setup
+    print "Installation of BanzaiDB requires pip. Please install it!"
+    print "http://pip.readthedocs.org/en/latest/installing.html"
+    sys.exit()
+
+from setuptools import setup
+
+__title__          = 'BanzaiDB'
+__version__       = '0.1'
+__description__   = "Database for Banzai NGS pipeline tool"
+__author__        = 'Mitchell Stanton-Cook'
+__author_email__  = 'm.stantoncook@gmail.com'
+__url__           = 'http://github.com/mscook/BanzaiDB'
+__license__       = 'ECL 2.0'
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-packages = [meta.__title__,]
+if sys.argv[-1] == 'clean':
+    os.system('rm -rf BanzaiDB.egg-info build dist')
+    sys.exit()
+
+packages = [__title__,]
 
 requires = []
 with open('requirements.txt') as fin:
     lines = fin.readlines()
-for l in lines:
-    requires.append(l.strip())
+    for line in lines:
+        requires.append(line.strip())
+
+# Build lists to package the docs
+html, sources, static = [], [], []
+html_f    = glob.glob('docs/_build/html/*')
+accessory = glob.glob('docs/_build/html/*/*')
+for f in html_f:
+    if os.path.isfile(f):
+        html.append(f)
+for f in accessory:
+    if f.find("_static") != -1:
+        if os.path.isfile(f):
+            static.append(f)
+    elif f.find("_sources"):
+        if os.path.isfile(f):
+            sources.append(f)
 
 setup(
-    name =                 meta.__title__,
-    version =              meta.__version__,
-    description =          meta.__description__,
-    long_description =     open('README.rst').read(),
-    author =               meta.__author__,
-    author_email =         meta.__author_email__,
-    url =                  meta.__url__,
-    packages =             packages,
-    scripts =              [''],
-    package_data =         {'': ['LICENSE']},
-    package_dir =          {meta.__title__: meta.__title__},
+    name                 = __title__,
+    version              = __version__,
+    description          = __description__,
+    long_description     = open('README.rst').read(),
+    author               = __author__,
+    author_email         = __author_email__,
+    url                  = __url__,
+    packages             = packages,
+    package_dir          = {__title__: 'src/'+__title__},
+    scripts              = ['src/'+__title__+'/'+__title__,],
+    package_data         = {__title__: ['fabfile/*.py'],},
+    data_files           = [('', ['LICENSE', 'requirements.txt', 'README.rst']),
+                            ('docs', html),
+                            ('docs/_static', static),
+                            ('docs/_sources', sources)],
     include_package_data = True,
-    install_requires =     requires,
-    license =              meta.__license__,
-    zip_safe =             False,
-    classifiers=(
+    install_requires     = requires,
+    license              = __license__,
+    zip_safe             = False,
+    classifiers          = (
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
