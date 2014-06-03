@@ -26,7 +26,7 @@ BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing
 (NGS) analysis with a NoSQL_ database. We use the RethinkDB_ NoSQL database.
 
 BanzaiDB:
-    * initalises the NoSQL database and associated tables,
+    * initialises the NoSQL database and associated tables,
     * populates the database with results of NGS experiments/analysis and,
     * provides a set of query functions to wrangle with the data stored within 
       the database.
@@ -35,8 +35,8 @@ BanzaiDB:
 Why BanzaiDB?
 -------------
 
-Downstream analysis (secondary/tertiary) of large collections of draft 
-microbial genomes typically generates many separate flat files. 
+The analysis (primary/secondary/tertiary) of large collections of draft 
+microbial genomes from NGS typically generates many separate flat files. 
 
 The bioinformatician will:
     * write scripts to parse and extract the important information from 
@@ -50,10 +50,10 @@ The bioinformatician will:
     * ...
     * ...
     * ...
-    * end up with thousands of flat files, many many scripts and generally get 
+    * end up with thousands of flat files, many scripts and generally get 
       confused as to how and where everything came from.
 
-The idea around BanzaiDB is to run once, store once anlyse many times.
+**The idea around BanzaiDB is to run once, store once analyse many times.**
 
 
 About BanzaiDB
@@ -82,7 +82,7 @@ About RethinkDB
 
 We choose RethinkDB_ as our underlying database for a few reasons:
     * RethinkDB is both developer and operations friendly. This sits well with 
-      the typical bioinforatician,
+      the typical bioinformatician,
     * NoSQL databases allow for a felxible schema. We can store/collect now, 
       think later. This is much like how science is performed.
     * Not every bioinformatician or lab has a system administrator. RethinkDB 
@@ -90,60 +90,67 @@ We choose RethinkDB_ as our underlying database for a few reasons:
     * We don't know how big our complex our datasets could get in the future. 
       It is easy to scale RethinkDB into a cluster.
     * ReQL the underlying query language is nice and simple to
-      learn/understand. We're also very confortable with Python and the 
-      availability of official python drivers (also javascript & ruby, and a 
+      learn/understand. We're also very comfortable with Python and the 
+      availability of official python drivers (also JavaScript & Ruby, and a 
       heap for user contributed for a swag of languages) is a big bonus.
 
 
-Requirements
-------------
+BanzaiDB Requirements
+---------------------
 
-You'll need a:
-    * A RethinkDB server/instance (from http://www.rethinkdb.com/) running 
-      locally
+You will need:
+    * (probably) administrator access to your machine(s)
+    * a RethinkDB_ server/instance. This can be running locally or on a VPS, 
+    * git (to clone this repository) and
+    * pip_
 
-Python modules (these can be pip installed):
+You will also need a few Python modules:
     * rethinkdb
     * biopython
     * reportlab
     * fabric
     * tablib
+    * argparse (if Python 2.6)
 
-To increase the rethinkdb client performance performance::
+The Python modules should/will be pulled down automatically when installing 
+BanzaiDB.
 
-    $ protoc --version
-    $ wget http://protobuf.googlecode.com/files/protobuf-2.4.1.tar.gz
-    $ tar -zxvf protobuf-2.4.1.tar.gz
-    $ cd protobuf-2.4.1/
-    $ cd python/
-    $ python setup.py install
-    $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+We recommend you increase the rethinkdb python `driver performance`_. We have 
+found that in some cases the installation of C++ backend fails. We provide 
+a simple protocol that we have found works (see: misc/python_C++_driver.sh).
 
 
-
-
-Assumptions
------------
-
-**1)** You have a RethinkDB instance running, You can give information about 
-this instance to BanzaiDB using::
-
-    db_host = 152.99.100.101
-    db_name = BLAH_RUN
-
-In the file **~/.BanzaiDB.cfg**
-
-**2)** You have downloaded and installed all required 3rd party python modules
-and have successfully install BanzaiDB.
-
-**3)** Write the rest...
-
-
-
-Usage
------
+BanzaiDB Installation
+---------------------
 
 Something like this::
+
+    $ git clone https://github.com/mscook/BanzaiDB.git
+    $ cd BanzaiDB
+    $ python setup.py install
+
+
+Getting BanzaiDB talking to RethinkDB
+-------------------------------------
+
+You provide information about you RethinDB instance and database using the 
+file **~/.BanzaiDB.cfg** (~/ ).
+
+The configuration file supports::
+
+    db_host  =  [def = localhost]
+    port     =  [def = 28015]
+    db_name  =  [def = Banzai]
+    auth_key =  [def = '']
+
+
+BanzaiDB usage
+--------------
+
+**Note:** Please refer to the `BanzaiDB documentation`_ (via ReadTheDocs) for 
+more detailed information (under active developement).
+
+Once both RethinkDB and BanzaiDB are installed and the configuration is set::
 
     $ python BanzaiDB.py -h
     usage: BanzaiDB.py [-h] [-v] {init,populate,update,query} ...
@@ -167,22 +174,10 @@ Something like this::
 
 
 
-
-Default BanzaiDB table schema
------------------------------
-
-On intialisation the following database tables will be generated:
-    * strains,
-    * metadata
-    * variants,
-    * ref
-    * ref_features
-
-More information can be found in tables.rst
-
-
 .. _RethinkDB: http://www.rethinkdb.com
 .. _NoSQL: http://nosql-database.org
 .. _Banzai NGS pipeline: https://github.com/mscook/Banzai-MicrobialGenomics-Pipeline
 .. _BanzaiDB documentation: http://banzaidb.readthedocs.org
+.. _driver performance: http://www.rethinkdb.com/docs/driver-performance/
+.. _pip: http://pip.readthedocs.org/en/latest/installing.html
 
