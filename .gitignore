@@ -10,3 +10,7 @@ sandbox/*
 _build
 _static
 _templates
+## package building stuff
+BanzaiDB.egg-info/
+build/
+dist/
