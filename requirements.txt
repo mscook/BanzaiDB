@@ -3,3 +3,4 @@ rethinkdb
 biopython
 fabric
 tablib
+argparse
