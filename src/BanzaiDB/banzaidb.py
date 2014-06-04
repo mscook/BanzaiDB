@@ -16,13 +16,12 @@
 import sys, os, traceback, argparse, time
 
 import glob
-import re
 
 import rethinkdb as r
-from   rethinkdb.errors import RqlRuntimeError, RqlDriverError
+from   rethinkdb.errors import RqlRuntimeError
 
-from BanzaiDB import config
 from BanzaiDB import core
+from BanzaiDB import database
 
 """
 BanzaiDB
@@ -49,32 +48,6 @@ __doc__ = " %s v%s - %s (%s)" % ( __title__,
                                   __url__)
 
 
-def make_connection():
-    """
-    Make a connection to the RethinkDB database
-
-    Pulls settings (host, port, database name & auth_key from
-    BanzaiDBConfig())
-
-    ..note::
-
-        The RethinkDB connection is a context manager. Thus use this
-        funtion like 'with make_connection():'
-
-    :returns: a connection context manager
-    """
-    cfg = config.BanzaiDBConfig()
-    if not re.match("^[a-zA-Z0-9_]+$", cfg['db_name']):
-        print "Database name must be %s " % ("A-Za-z0-9_")
-        sys.exit(1)
-    try:
-        connection = r.connect(host=cfg['db_host'], port=cfg['port'],
-                            db=cfg['db_name'], auth_key=cfg['auth_key'])
-    except RqlDriverError:
-        print "No database connection could be established."
-        sys.exit(1)
-    return connection
-
 
 def init_database_with_default_tables(args):
     """
@@ -84,7 +57,7 @@ def init_database_with_default_tables(args):
     """
     # Add additional (default) tables here...
     def_tables = ['variants', 'strains', 'ref', 'ref_feat']
-    with make_connection() as connection:
+    with database.make_connection() as connection:
         try:
             r.db_create(connection.db).run(connection)
             for atable in def_tables:
@@ -152,7 +125,7 @@ def populate_mapping(args):
     ref = run_path.split('/')[-1].split('.')[0]
     infiles = glob.glob(run_path+'/*/report.txt')
     ref = os.path.join(run_path+'/', ref+'/reference.gbk')
-    with make_connection() as connection:
+    with database.make_connection() as connection:
         for report in infiles:
             parsed = core.nesoni_report_to_JSON(report)
             count = len(parsed)
