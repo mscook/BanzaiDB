@@ -11,3 +11,37 @@
 # or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
+import re
+import sys
+
+import rethinkdb as r
+from   rethinkdb.errors import RqlDriverError
+
+from   BanzaiDB import config
+
+
+def make_connection():
+    """
+    Make a connection to the RethinkDB database
+
+    Pulls settings (host, port, database name & auth_key from
+    BanzaiDBConfig())
+
+    ..note::
+
+        The RethinkDB connection is a context manager. Thus use this
+        funtion like 'with make_connection():'
+
+    :returns: a connection context manager
+    """
+    cfg = config.BanzaiDBConfig()
+    if not re.match("^[a-zA-Z0-9_]+$", cfg['db_name']):
+        print "Database name must be %s " % ("A-Za-z0-9_")
+        sys.exit(1)
+    try:
+        connection = r.connect(host=cfg['db_host'], port=cfg['port'],
+                            db=cfg['db_name'], auth_key=cfg['auth_key'])
+    except RqlDriverError:
+        print "No database connection could be established."
+        sys.exit(1)
+    return connection
