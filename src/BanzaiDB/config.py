@@ -1,4 +1,4 @@
-# Copyright 2013 Mitchell Stanton-Cook Licensed under the
+# Copyright 2013-2014 Mitchell Stanton-Cook Licensed under the
 # Educational Community License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may
 # obtain a copy of the License at
@@ -15,11 +15,10 @@
 import os
 import sys
 
-class BanzaiDBConfig():
+class BanzaiDBConfig(object):
     """
     BanzaiDB configuration class
     """
-
     def __init__(self):
         self.config = self.read_config()
 
@@ -52,7 +51,6 @@ class BanzaiDBConfig():
         try:
             with open(os.path.expanduser('~/')+'.BanzaiDB.cfg') as fin:
                 #sys.stderr.write("Using a BanzaiDB config file\n")
-                colors = []
                 for line in fin:
                     if (line.startswith('db_host')  or
                             line.startswith('port') or
@@ -61,17 +59,12 @@ class BanzaiDBConfig():
                         option, val = line.split('=')
                         cfg[option.strip()] = val.strip()
         except IOError:
-            #sys.stderr.write("Using RethinkDB defaults\n")
-            pass
-            #for k, v in cfg.items():
-            #    print "\t%s = %s" % (k, str(v))
-            #print 40*'-'
+            sys.stderr.write("Using RethinkDB defaults\n")
         return cfg
 
     def dump_items(self):
         """
         Prints all set configuration options to STDOUT
         """
-        config = ''
         for key, value in self.config.items():
             print str(key)+" = "+str(value)+"\n"
