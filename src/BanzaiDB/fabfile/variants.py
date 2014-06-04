@@ -1,17 +1,15 @@
+from collections import Counter
+import threading
+import ast
+import sys
+
 import rethinkdb as r
-from   rethinkdb.errors import RqlRuntimeError, RqlDriverError
 from   fabric.api   import task
-from   fabric.tasks import Task
 
 from BanzaiDB import config
 from BanzaiDB import converters
 from BanzaiDB import misc
 from BanzaiDB import imaging
-
-from collections import Counter
-import threading
-import ast 
-import time
 
 TABLE = 'variants'
 
@@ -24,7 +22,7 @@ def make_a_connection():
     cfg = config.BanzaiDBConfig()
     # Make a connection
     try:
-        conn = r.connect(host=cfg['db_host'], port=cfg['port'], 
+        conn = r.connect(host=cfg['db_host'], port=cfg['port'],
                             db=cfg['db_name'])
     except RqlDriverError:
         print "No database connection could be established."
@@ -100,21 +98,21 @@ def fetch_given_strain_position(strain, position):
 
 
 @task
-def get_variants_in_range(start, end, verbose=True, 
+def get_variants_in_range(start, end, verbose=True,
                     plucking = 'StrainID Position LocusTag Class SubClass'):
     """
     Return all the variants in given [start:end] range (inclusive of)
-    
-    By default: print (in CSV) results with headers: 
+
+    By default: print (in CSV) results with headers:
     StrainID, Position, LocusTag, Class, SubClass
-    
+
     :param start: the genomic location start
     :param end: the genomic location end
     :param verbose: [def = True] toggle if printing results
-    :param plucking: [def = 'StrainID Position LocusTag Class SubClass'] 
+    :param plucking: [def = 'StrainID Position LocusTag Class SubClass']
                      toggle headers based on table values
 
-    :returns: List containing JSON elements with the data: 'StrainID', 
+    :returns: List containing JSON elements with the data: 'StrainID',
                 'Position', 'LocusTag', 'Class', 'SubClass' for each result
     """
     verbose = ast.literal_eval(str(verbose))
@@ -137,15 +135,15 @@ def get_variants_in_range(start, end, verbose=True,
 
 
 @task
-def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True, 
+def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True,
                 plucking = 'StrainID Position LocusTag Class SubClass'):
     """
     Return variants with a match in the "Product" with the regular_expression
 
-    Supported regular expression syntax: 
+    Supported regular expression syntax:
     https://code.google.com/p/re2/wiki/Syntax
 
-    By default: print (in CSV) results with headers: 
+    By default: print (in CSV) results with headers:
     StrainID, Position, LocusTag, Class, SubClass
 
     :param regular_expression:
@@ -153,8 +151,8 @@ def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True,
     :param verbose: [def = True] toggle if printing results
     :param plucking: [def = 'StrainID Position LocusTag Class SubClass']
                     toggle headers based on table headers
-    
-    :returns: List containing JSON elements with the data: 'StrainID', 
+
+    :returns: List containing JSON elements with the data: 'StrainID',
                 'Position', 'LocusTag', 'Class', 'SubClass' for each result
     """
     verbose = ast.literal_eval(str(verbose))
@@ -179,7 +177,7 @@ def plot_variant_positions(strains):
     Generate a PDF of SNP positions for given strains using GenomeDiagram
 
     Places the reference features on the outerring
-  
+
     User has to provide a space dlimited list of strains (see warning below)
 
     .. warning: if you have heaps of variants this will most likely fry you
@@ -243,7 +241,7 @@ def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
     """
     Return positions that have at least this many variants
 
-    By default the minimum number will be equal to all the strains in the 
+    By default the minimum number will be equal to all the strains in the
     study.
 
     Example usage:
@@ -251,7 +249,7 @@ def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
         fab variants.variant_positions_within_atleast
         fab variants.variant_positions_within_atleast:16
 
-    :param minimum_at_position: [def = None] minimum number of variants 
+    :param minimum_at_position: [def = None] minimum number of variants
                                 conserved in N strains at this positions
     """
     verbose = ast.literal_eval(str(verbose))
@@ -287,7 +285,7 @@ def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
     conn.close()
     return results
 
-@task 
+@task
 def strain_variant_stats(strains=None, verbose=True):
     """
     Print the number of variants and variant classes for all strains
@@ -297,7 +295,7 @@ def strain_variant_stats(strains=None, verbose=True):
         fab variants.strain_variant_stats
         fab variants.strain_variant_stats:'AEXT01-FSL-S3-026 QMA0306.gz'
 
-    :param strains: [def = None] Print info about all strains unless given a 
+    :param strains: [def = None] Print info about all strains unless given a
                     space delimited list of specific strains
     :param verbose: [def = True] print to STDOUT
 
@@ -317,7 +315,7 @@ def strain_variant_stats(strains=None, verbose=True):
         tmp.append(r.table(TABLE).filter({'StrainID': strain}).count().run(conn))
         classes = ['substitution', 'insertion', 'deletion']
         for c in classes:
-            tmp.append(r.table(TABLE).filter({'StrainID': strain, 
+            tmp.append(r.table(TABLE).filter({'StrainID': strain,
                                               'Class': c}).count().run(conn))
         cur = "%s,%i,%i,%i,%i" % (strain, tmp[0], tmp[1], tmp[2], tmp[3])
         if verbose:
@@ -333,16 +331,16 @@ def what_differentiates_strains(strain_set1, strain_set2, verbose=True):
 
     Variants positions in strains_set1 not in strain_set2
 
-    This uses threading. Very cool. See: 
+    This uses threading. Very cool. See:
     stackoverflow.com/questions/2846653/python-multithreading-for-dummies
     """
     strain_set1, strain_set2 = strain_set1.split(' '), strain_set2.split(' ')
     thread1 = ThreadedPositionCounter(strain_set1)
     thread2 = ThreadedPositionCounter(strain_set2)
-    thread1.start() 
+    thread1.start()
     thread2.start()
-    thread1.join()  
-    thread2.join()  
+    thread1.join()
+    thread2.join()
     res1 = sorted(list(set(thread1.passed) - set(thread2.passed)))
     res2 = sorted(list(set(thread2.passed) - set(thread1.passed)))
     conn = make_a_connection()
@@ -353,11 +351,11 @@ def what_differentiates_strains(strain_set1, strain_set2, verbose=True):
         print header
     for res in res1:
         cur = list(r.table(TABLE).filter({'StrainID': strain_set1[0],'Position': res}).run(conn))[0]
-        cur_str = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set1), 
-                                                cur['Position'], 
-                                                cur['LocusTag'], 
-                                                cur['Product'], 
-                                                cur['Class'], 
+        cur_str = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set1),
+                                                cur['Position'],
+                                                cur['LocusTag'],
+                                                cur['Product'],
+                                                cur['Class'],
                                                 cur['SubClass'])
         results.append(cur_str)
         if verbose:
@@ -365,11 +363,11 @@ def what_differentiates_strains(strain_set1, strain_set2, verbose=True):
         print cur_str
     for res in res2:
         cur = list(r.table(TABLE).filter({'StrainID': strain_set2[0],'Position': res}).run(conn))[0]
-        cur_str = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set2), 
-                                                cur['Position'], 
-                                                cur['LocusTag'], 
-                                                cur['Product'], 
-                                                cur['Class'], 
+        cur_str = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set2),
+                                                cur['Position'],
+                                                cur['LocusTag'],
+                                                cur['Product'],
+                                                cur['Class'],
                                                 cur['SubClass'])
         results.append(cur_str)
         if verbose:
