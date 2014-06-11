@@ -1,12 +1,23 @@
+# Copyright 2013-2014 Mitchell Stanton-Cook Licensed under the
+# Educational Community License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may
+# obtain a copy of the License at
+#
+# http://www.osedu.org/licenses/ECL-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS"
+# BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+# or implied. See the License for the specific language governing
+# permissions and limitations under the License.
+
 from collections import Counter
-import threading
 import ast
-import sys
 
 import rethinkdb as r
 from   fabric.api   import task
 
-from BanzaiDB import config
+from BanzaiDB import database
 from BanzaiDB import converters
 from BanzaiDB import misc
 from BanzaiDB import imaging
@@ -14,53 +25,65 @@ from BanzaiDB import imaging
 TABLE = 'variants'
 
 
-def make_a_connection():
-    """
-    Make a connection to the RethinkDB using defaults or user supplied
-    """
-    # Get required config - cfg['db_host'], cfg['port'], cfg['db_name']
-    cfg = config.BanzaiDBConfig()
-    # Make a connection
-    try:
-        conn = r.connect(host=cfg['db_host'], port=cfg['port'],
-                            db=cfg['db_name'])
-    except RqlDriverError:
-        print "No database connection could be established."
-        sys.exit(1)
-    return conn
-
 def get_required_strains(strains):
     """
+    Returns a list of strains stored in the database if argument strains=None
+
+    If argument strains=None we actually query the database
+
+    If argument strains is not None we actually just spit the strain string on
+    the space delimiter.
+
+    :param strains: a string of strain IDs
+
+    :type strains: string or None
+
+    :returns: a list of strains (if None, those all stored in the database)
     """
-    conn = make_a_connection()
-    if strains == None:
-        get_strains = r.table('strains').pluck('StrainID').run(conn)
-        strains = [e['StrainID'].encode('ascii','ignore') for e in get_strains]
-    else:
-        strains = strains.split(' ')
-    conn.close()
-    return strains
+    strains_list = []
+    with database.make_connection() as connection:
+        if strains == None:
+            get_strains = r.table('strains').pluck('StrainID').run(connection)
+            strains_list = [e['StrainID'].encode('ascii','ignore') for e in get_strains]
+        else:
+            strains_list = strains.split(' ')
+    return strains_list
 
 def get_num_strains():
     """
     Get the number of strains in the study
+
+    It will query all strains in the database and will factor if the reference
+    has been included in the run (will remove it from the count)
+
+    :returns: the number of strains as an int
     """
     strains = get_required_strains(None)
     strain_count = len(strains)
-    conn = make_a_connection()
-    # In case reference included in run
-    ref_id = list(r.table('ref').run(conn))[0]['id']
-    for e in strains:
-        if e.find(ref_id) != -1:
-            strain_count = strain_count-1
-            break
+    with database.make_connection() as connection:
+        # In case reference is included in run
+        # Will need to update for multiple runs
+        ref_id = list(r.table('ref').run(connection))[0]['id']
+        for e in strains:
+            if e.find(ref_id) != -1:
+                strain_count = strain_count-1
+                break
     return strain_count
+
 
 def filter_counts(list_of_elements, minimum):
     """
+    Filter out elements in a list that are not observed a minimum of times
+
+    :param list_of_elements: a list of for example positions
+    :param minimum: the miminum number of times an value must be observed
+
+    :type list_of_elements: list
+    :type minimum: int
+
+    :returns: a dictionary of value:observation key value pairs
     """
     counts = Counter(list_of_elements)
-    # Filter out those below threshold
     lookup = {}
     for k, v in counts.items():
         if v >= minimum:
@@ -68,33 +91,44 @@ def filter_counts(list_of_elements, minimum):
     return lookup
 
 
+def position_counter(strains):
+    """
+    Pull all the positions that we observe changes
 
-class ThreadedPositionCounter(threading.Thread):
+    .. note::
 
-    def __init__(self, strains):
-        threading.Thread.__init__(self)
-        self.strains = strains
-        self.passed  = None
-
-    def run(self):
-        conn = make_a_connection()
+        This query could be sped up?
+    """
+    with database.make_connection() as connection:
         pos = []
-        for strain in self.strains:
-            cursor = r.table(TABLE).filter({'StrainID': strain}).pluck('Position').run(conn)
+        for strain in strains:
+            # Get every variant position
+            cursor = r.table(TABLE).filter({'StrainID': strain}).pluck('Position').run(connection)
             cur = [strain['Position'] for strain in cursor]
             pos = pos+cur
-        passed = filter_counts(pos, len(self.strains)).keys()
-        self.passed = passed
-        conn.close()
+        common = filter_counts(pos, len(strains))
+    return common
 
 def fetch_given_strain_position(strain, position):
     """
+    With a strainID and a 'change' position return known details
+
+    Prints the position, locus tag, product, class and subclass
+
+    :param strain: the strain ID
+    :param position: the position relative to the reference
+
+    :type strain: string
+    :type position: int
+
+    :returns: a dictionary (JSON)
     """
-    conn = make_a_connection()
-    result = list(r.table(TABLE).filter({'StrainID': strain, 'Position': position}).run(conn))[0]
-    print str(result['Position'])+","+result['LocusTag']+","+result['Product']+","+result['Class']+","+str(result['SubClass'])
-    conn.close()
+    result = {}
+    with database.make_connection() as connection:
+        result = list(r.table(TABLE).filter({'StrainID': strain, 'Position': position}).run(connection))[0]
+        print str(result['Position'])+","+result['LocusTag']+","+result['Product']+","+result['Class']+","+str(result['SubClass'])
     return result
+
 
 
 @task
@@ -105,6 +139,14 @@ def get_variants_in_range(start, end, verbose=True,
 
     By default: print (in CSV) results with headers:
     StrainID, Position, LocusTag, Class, SubClass
+
+    Examples::
+
+        # All variants in the 1Kb range of 60K-61K
+        fab variants.get_variants_in_range:60000,61000
+
+        #Nail down on a particular position and redefine the output
+        fab variants.get_variants_in_range:60760,60760,plucking='StrainID Position Class Product'
 
     :param start: the genomic location start
     :param end: the genomic location end
@@ -118,21 +160,21 @@ def get_variants_in_range(start, end, verbose=True,
     verbose = ast.literal_eval(str(verbose))
     plucking = plucking.split(' ')
     ROW = 'Position'
-    conn = make_a_connection()
-    cursor = r.table(TABLE).filter(
-                r.row[ROW] <= int(end)).filter(
-                r.row[ROW] >= int(start)).pluck(
-                        plucking).run(conn)
     JSON_result = []
-    for idx, document in enumerate(cursor):
-        if verbose:
-            if idx != 0:
-                print converters.convert_from_JSON_to_CSV(document)
-            else:
-                print converters.convert_from_JSON_to_CSV(document, True)
-        JSON_result.append(document)
-    return JSON_result
-
+    with database.make_connection() as connection:
+        cursor = r.table(TABLE).filter(
+                    r.row[ROW] <= int(end)).filter(
+                    r.row[ROW] >= int(start)).pluck(
+                            plucking).run(connection)
+        JSON_result = []
+        for idx, document in enumerate(cursor):
+            if verbose:
+                if idx != 0:
+                    print converters.convert_from_JSON_to_CSV(document)
+                else:
+                    print converters.convert_from_JSON_to_CSV(document, True)
+            JSON_result.append(document)
+        return JSON_result
 
 @task
 def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True,
@@ -157,17 +199,17 @@ def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True,
     """
     verbose = ast.literal_eval(str(verbose))
     plucking = plucking.split(' ')
-    conn = make_a_connection()
-    cursor = r.table(TABLE).filter(lambda row:row[ROW].match(
-                regular_expression)).pluck(plucking).run(conn)
     JSON_result = []
-    for idx, document in enumerate(cursor):
-        if verbose:
-            if idx != 0:
-                print converters.convert_from_JSON_to_CSV(document)
-            else:
-                print converters.convert_from_JSON_to_CSV(document, True)
-        JSON_result.append(document)
+    with database.make_connection() as connection:
+        cursor = r.table(TABLE).filter(lambda row:row[ROW].match(
+                    regular_expression)).pluck(plucking).run(connection)
+        for idx, document in enumerate(cursor):
+            if verbose:
+                if idx != 0:
+                    print converters.convert_from_JSON_to_CSV(document)
+                else:
+                    print converters.convert_from_JSON_to_CSV(document, True)
+            JSON_result.append(document)
     return JSON_result
 
 
@@ -324,51 +366,67 @@ def strain_variant_stats(strains=None, verbose=True):
     conn.close()
     return results
 
+
+def list_membership(combined, list1, list2):
+    """
+    """
+    in1, in2 = [], []
+    for e in combined:
+        if e in list1:
+            in1.append(e)
+        elif e in list2:
+            in2.append(e)
+        else:
+            print "Error"
+    return sorted(in1, key=int), sorted(in2, key=int)
+
+
+def extract_positions(position_list, strain_set, verbose):
+    """
+    """
+    results = []
+    with database.make_connection() as connection:
+        cursor = r.table(TABLE).get_all(*position_list, index="Position").filter(
+            {'StrainID': strain_set[0]}).run(connection)
+        for defining_snp in cursor:
+            cur = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set),
+                                             defining_snp['Position'],
+                                             defining_snp['LocusTag'],
+                                             defining_snp['Product'],
+                                             defining_snp['Class'],
+                                             defining_snp['SubClass'])
+            results.append(defining_snp)
+            if verbose:
+                print cur
+    return results
+
+
 @task
 def what_differentiates_strains(strain_set1, strain_set2, verbose=True):
     """
-    Provide variant positions that differentiate two given sets of strains
+    Get variant **positions** that differentiate two given sets of strains
 
-    Variants positions in strains_set1 not in strain_set2
+    Example usage::
 
-    This uses threading. Very cool. See:
-    stackoverflow.com/questions/2846653/python-multithreading-for-dummies
+        fab $BANZAIDB_LOCATION/fabfile/' variants.what_differentiates_strains:ASCC880519,'ASCC881171 ASCC881475'
+
+    :param strain_set1: a space delimited string of strains that belong in set1
+    :param strain_set2: a space delimited string of strains that belong in set2
+
+    :returns: 2 lists of JSON that define the variants that are unique to set1
+              (1st) and set2 (2nd)
     """
-    strain_set1, strain_set2 = strain_set1.split(' '), strain_set2.split(' ')
-    thread1 = ThreadedPositionCounter(strain_set1)
-    thread2 = ThreadedPositionCounter(strain_set2)
-    thread1.start()
-    thread2.start()
-    thread1.join()
-    thread2.join()
-    res1 = sorted(list(set(thread1.passed) - set(thread2.passed)))
-    res2 = sorted(list(set(thread2.passed) - set(thread1.passed)))
-    conn = make_a_connection()
-    results = []
     header = 'Exclusivity,Position,LocusTag,Product,Class,SubClass'
-    results.append(header)
     if verbose:
         print header
-    for res in res1:
-        cur = list(r.table(TABLE).filter({'StrainID': strain_set1[0],'Position': res}).run(conn))[0]
-        cur_str = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set1),
-                                                cur['Position'],
-                                                cur['LocusTag'],
-                                                cur['Product'],
-                                                cur['Class'],
-                                                cur['SubClass'])
-        results.append(cur_str)
-        if verbose:
-            print cur_str
-        print cur_str
-    for res in res2:
-        cur = list(r.table(TABLE).filter({'StrainID': strain_set2[0],'Position': res}).run(conn))[0]
-        cur_str = '"%s",%i,%s,"%s",%s,%s' % (' '.join(strain_set2),
-                                                cur['Position'],
-                                                cur['LocusTag'],
-                                                cur['Product'],
-                                                cur['Class'],
-                                                cur['SubClass'])
-        results.append(cur_str)
-        if verbose:
-            print cur_str
+    strain_set1, strain_set2 = strain_set1.split(' '), strain_set2.split(' ')
+    # Positions only considered if found in all in the strains within the set
+    r1, r2 = position_counter(strain_set1), position_counter(strain_set2)
+    # A new set with elements in either r1 or r2 but not both
+    unique = set(r1).symmetric_difference(set(r2))
+    sin1, sin2 = list_membership(unique, r1, r2)
+    # if verbose:
+    #    print "%i variants are unique to set 1" % (len(sin1))
+    #    print "%i variants are unique to set 1" % (len(sin2))
+    return (extract_positions(sin1, strain_set1, verbose),
+            extract_positions(sin2, strain_set2, verbose))
