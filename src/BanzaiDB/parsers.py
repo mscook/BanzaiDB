@@ -15,10 +15,10 @@
 Functions to parse a nesoni report .txt file
 """
 
-               
+
 def parse_evidence(evidence):
     """
-    From a evdience string/element return a dictionary or obs/counts
+    From an evidence string/element return a dictionary or obs/counts
 
     :param evidence: an evidence string. It looks something like this -
                         Ax27 AGCAx1 AGCAATTAATTAAAATAAx
@@ -34,7 +34,7 @@ def parse_evidence(evidence):
 def strip_non_CDS(protein_line):
     """
     Remove STS/misc_feature etc. from the protein line
-    
+
     :param protein_line: a parsed protein line as a string
     """
     if protein_line.find(',') != -1:
@@ -44,7 +44,7 @@ def strip_non_CDS(protein_line):
 
 def parse_substitution(consequence):
     """
-    Return fields for syn, non-syn or correlated 
+    Return fields for syn, non-syn or correlated
     """
     elem       = consequence.strip().split(' ')
     correlated = False
@@ -64,7 +64,7 @@ def parse_substitution(consequence):
         # Need to handle correlated non-syn
         else:
             #CDS YP=>E ECSF_0465 base 379 codon 127 of codons 127..128 hypothetical protein
-            #CDS A=>QR ECSF_0595 base 1527 codon 509 apolipoprotein N-acyltransferase                                  
+            #CDS A=>QR ECSF_0595 base 1527 codon 509 apolipoprotein N-acyltransferase
             correlated = True
             if elem[7] == 'of':
                 region     = elem[9]
@@ -89,7 +89,7 @@ def parse_substitution(consequence):
 
 def parse_substitution_misc(consequence):
     """
-    Return fields for syn, non-syn or correlated 
+    Return fields for syn, non-syn or correlated
     """
     elem       = consequence.strip().split(' ')
     #Default: ['gene', 'G=>A', 'GBS222_0094', 'base', '33']
@@ -161,7 +161,7 @@ def parse_insertion(consequence):
 
 def parse_insertion_misc(consequence):
     elem       = consequence.strip().split(' ') + ['', '']
-    # Default: ['gene', '-=>ACC', 'GBS222_0005', 'before', 'base', '105', '', ''] 
+    # Default: ['gene', '-=>ACC', 'GBS222_0005', 'before', 'base', '105', '', '']
     correlated = False
     locus_tag  = elem[2]
     # Handle: ['gene', 'C=>G', 'GBS222_t08', 'base', '64,', 'tRNA', 'C=>G', 'GBS222_t08', 'base', '64', 'tRNA-Phe']
@@ -184,12 +184,12 @@ def parse_deletion(consequence):
     codon      = int(elem[6])
     region     = None
     old_aa, new_aa = None, None
-    # Standard - found a sinlge edge case... 
+    # Standard - found a sinlge edge case...
     # ['CDS', 'frame-shift', 'ECSF_4268', 'base', '691', 'codon', '231', 'of', 'codons', '229..281', 'hypothetical', 'protein']
-    # ['CDS', 'frame-shift', 'ECSF_3381', 'base','1692   'codon'  '564' hypothetical protein    
+    # ['CDS', 'frame-shift', 'ECSF_3381', 'base','1692   'codon'  '564' hypothetical protein
 
     if elem[1].find("frame-shift") != -1:
-        if elem[7] == 'of': 
+        if elem[7] == 'of':
             region  = elem[9]
             protein = ' '.join(elem[10:])
         else:
@@ -206,9 +206,20 @@ def parse_deletion(consequence):
             protein = ' '.join(elem[10:])
         else:
             protein = ' '.join(elem[7:])
+    # Possibly correlated (Possibly where insertion effect  downstream deletion)
+    #['CDS', 'synonymous', 'L37667', 'base', '979', 'codon', '327', 'of', 'codons', '326..329', 'DNA', 'primase,', 'misc_feature', 'T=>-', 'L37667', 'base', '937', '', '']
+    elif elem[1].find("synonymous") != -1:
+        correlated = True
+        # Think this is WRONG!!!
+        old_aa, new_aa = elem[13].split("=>")
+        if elem[8] == 'codons':
+            region = elem[9]
+            protein = ' '.join(elem[10:])
+        else:
+            raise Exception("New case in deletion", elem)
     else:
         raise Exception("Error in deletion", elem)
-    protein = strip_non_CDS(protein)  
+    protein = strip_non_CDS(protein)
     return locus_tag, base, codon, region, old_aa, new_aa, protein, correlated
 
 
