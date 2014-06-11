@@ -16,6 +16,14 @@ from Bio import SeqIO
 from BanzaiDB import parsers
 
 
+#def bring_CDS_to_front(line):
+#    """
+#
+#    """
+#    for e in feat_list:
+#        if e[]
+
+
 def nesoni_report_to_JSON(report_file):
     """
     Convert a nesoni report.txt to JSON
@@ -33,24 +41,31 @@ def nesoni_report_to_JSON(report_file):
     misc_set = ['tRNA', 'gene', 'rRNA']
     with open(report_file) as fin:
         print "Parsing %s" % report_file
-        skip = fin.readline()
+        # Skip the header
+        fin.readline()
         for line in fin:
-            ref_id, pos, type, old, new, evidence, cons = line.split('\t')
+            ref_id, pos, ftype, old, new, evidence, cons = line.split('\t')
             tmp = ref_id.split('.')
             tmp = '.'.join(tmp[:-1])
             ref_id = tmp
             obs_count = parsers.parse_evidence(evidence)
+            # Deal with "mixed" features
+            mixed = cons.split(',')
+            if len(mixed) == 2:
+                # CDS is second
+                if mixed[1][1:4] == 'CDS':
+                    cons = str(mixed[1][1:-1])+", "+mixed[0]+"\n"
             # Work with CDS
             if cons.strip() != '' and cons.split(' ')[0] == 'CDS':
-                if type.find("substitution") != -1:
+                if ftype.find("substitution") != -1:
                     # 0      1         2       3    4      5       6      7
                     #class|sub_type|locus_tag|base|codon|region|old_aa|new_aa|
                     #   8        9
                     #protein|correlated
                     dat = ('substitution',) + parsers.parse_substitution(cons)
-                elif type.find("insertion") != -1:
+                elif ftype.find("insertion") != -1:
                     dat = ('insertion', None) + parsers.parse_insertion(cons)
-                elif type.find("deletion") != -1:
+                elif ftype.find("deletion") != -1:
                     dat = ('deletion', None) + parsers.parse_deletion(cons)
                 else:
                     raise Exception("Unsupported. Only SNPs & INDELS")
@@ -59,13 +74,13 @@ def nesoni_report_to_JSON(report_file):
                 dat[3] = int(dat[3])
                 dat[4] = int(dat[4])
             elif cons.strip() != '' and cons.split(' ')[0] in misc_set:
-                if type.find("substitution") != -1:
+                if ftype.find("substitution") != -1:
                     dat = (('substitution',) +
                                     parsers.parse_substitution_misc(cons))
-                elif type.find("insertion") != -1:
+                elif ftype.find("insertion") != -1:
                     dat = (('insertion', None) +
                                     parsers.parse_insertion_misc(cons))
-                elif type.find("deletion") != -1:
+                elif ftype.find("deletion") != -1:
                     dat = (('deletion', None) +
                                     parsers.parse_deletion_misc(cons))
                 else:
@@ -73,7 +88,7 @@ def nesoni_report_to_JSON(report_file):
                 dat = list(dat)
                 dat[3] = int(dat[3])
             else:
-                dat = [type.split('-')[0]]+[None]*9
+                dat = [ftype.split('-')[0]]+[None]*9
             json = {"id" : strain+'_'+ref_id+'_'+pos,
                     "StrainID" : strain,
                     "Position" : int(pos),
@@ -92,6 +107,7 @@ def nesoni_report_to_JSON(report_file):
                     "Evidence" : obs_count
                     }
             parsed_list.append(json)
+    print "\t %i variants parsed" % len(parsed_list)
     return parsed_list
 
 
