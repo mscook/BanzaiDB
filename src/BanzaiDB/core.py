@@ -12,7 +12,7 @@
 # permissions and limitations under the License.
 
 from Bio import SeqIO
-
+import os
 from BanzaiDB import parsers
 
 
@@ -24,9 +24,43 @@ from BanzaiDB import parsers
 #        if e[]
 
 
-def nesoni_report_to_JSON(report_file):
+def nway_reportify(nway_any_file):
     """
-    Convert a nesoni report.txt to JSON
+    Convert a nway.any to something similar to report.txt
+
+    This converts the nway.any which contains richer information (i.e. N
+    calls) into something similar to report.txt
+    """
+    parsed = []
+    nway_any_file = os.path.expanduser(nway_any_file)
+    if not os.path.isfile(nway_any_file):
+        print "Please specify a valid Nesoni n-way SNP comparison file"
+        sys.exit(1)
+    else:
+        with open(nway_any_file, 'r') as f:
+            strains = f.readline().strip().split()[5:-1]
+            num_strains = len(strains)/3
+            strains = strains[:num_strains]
+            for line in f:
+                cur = line.split("\t")
+                has_N = False
+                ref_id, position, ct, ref = cur[0], int(cur[1]), cur[2], cur[3]
+                changes = cur[4:num_strains+4]
+                if 'N' in changes:
+                    has_N = True
+                evidence = cur[num_strains+4:(2*(num_strains))+4]
+                consequences = cur[(2*(num_strains))+4:-1]
+                assert len(strains) == len(changes) == len(evidence)
+                results = zip([ref_id]*num_strains, [position]*num_strains,
+                              strains, [ref]*num_strains, [ct]*num_strains,
+                              changes, evidence, consequences,
+                              [has_N]*num_strains)
+                parsed.append(results)
+        return parsed
+
+def nesoni_report_to_JSON(reportified):
+    """
+    Convert a nesoni nway that has been reportified to JSON
 
     **All features in report are parsed**
 
@@ -36,78 +70,88 @@ def nesoni_report_to_JSON(report_file):
 
     :returns: a list of JSON
     """
+    stats = {}
     parsed_list = []
-    strain = report_file.split('/')[-2]
     misc_set = ['tRNA', 'gene', 'rRNA']
-    with open(report_file) as fin:
-        print "Parsing %s" % report_file
-        # Skip the header
-        fin.readline()
-        for line in fin:
-            ref_id, pos, ftype, old, new, evidence, cons = line.split('\t')
-            tmp = ref_id.split('.')
-            tmp = '.'.join(tmp[:-1])
-            ref_id = tmp
-            obs_count = parsers.parse_evidence(evidence)
-            # Deal with "mixed" features
-            mixed = cons.split(',')
-            if len(mixed) == 2:
-                # CDS is second
-                if mixed[1][1:4] == 'CDS':
-                    cons = str(mixed[1][1:-1])+", "+mixed[0]+"\n"
-            # Work with CDS
-            if cons.strip() != '' and cons.split(' ')[0] == 'CDS':
-                if ftype.find("substitution") != -1:
-                    # 0      1         2       3    4      5       6      7
-                    #class|sub_type|locus_tag|base|codon|region|old_aa|new_aa|
-                    #   8        9
-                    #protein|correlated
-                    dat = ('substitution',) + parsers.parse_substitution(cons)
-                elif ftype.find("insertion") != -1:
-                    dat = ('insertion', None) + parsers.parse_insertion(cons)
-                elif ftype.find("deletion") != -1:
-                    dat = ('deletion', None) + parsers.parse_deletion(cons)
-                else:
-                    raise Exception("Unsupported. Only SNPs & INDELS")
-                            # Support for: 'tRNA', 'gene', 'rRNA'
-                dat = list(dat)
-                dat[3] = int(dat[3])
-                dat[4] = int(dat[4])
-            elif cons.strip() != '' and cons.split(' ')[0] in misc_set:
-                if ftype.find("substitution") != -1:
-                    dat = (('substitution',) +
-                                    parsers.parse_substitution_misc(cons))
-                elif ftype.find("insertion") != -1:
-                    dat = (('insertion', None) +
-                                    parsers.parse_insertion_misc(cons))
-                elif ftype.find("deletion") != -1:
-                    dat = (('deletion', None) +
-                                    parsers.parse_deletion_misc(cons))
-                else:
-                    raise Exception("Unsupported. Only SNPs & INDELS")
-                dat = list(dat)
-                dat[3] = int(dat[3])
+    for position in reportified:
+        for elem in position:
+            print elem
+            # ref_id, position, strain, ref, ct, change, evidence, consequence, has_N
+            #  '.', 843, 'IR49', 'A', 'substitution', 'A', 'Ax98', '', True
+            ref_id, pos, strain, old, ftype, new, evidence, cons, has_N = elem
+            if new == old:
+                # Class SubClass LocusTag CDSBaseNum CDSAANum CDSRegion RefAA
+                # ChangeAA Product CorrelatedChange
+                dat = [None]*10
+            elif new == 'N':
+                dat = ["Uncalled"]+[None]*9
             else:
-                dat = [ftype.split('-')[0]]+[None]*9
-            json = {"id" : strain+'_'+ref_id+'_'+pos,
-                    "StrainID" : strain,
-                    "Position" : int(pos),
-                    "LocusTag" : dat[2],
-                    "Class" : dat[0],
-                    "SubClass" : dat[1],
-                    "RefBase" : old,
-                    "ChangeBase" : new,
-                    "CDSBaseNum": dat[3],
-                    "CDSAANum": dat[4],
-                    "CDSRegion": dat[5],
-                    "RefAA" : dat[6],
-                    "ChangeAA" : dat[7],
-                    "Product" : dat[8],
-                    "CorrelatedChange" : dat[9],
-                    "Evidence" : obs_count
-                    }
-            parsed_list.append(json)
-    print "\t %i variants parsed" % len(parsed_list)
+                try:
+                    stats[strain] = stats[strain]+1
+                except KeyError:
+                    stats[strain] = 1
+                tmp = ref_id.split('.')
+                ref_id = '.'.join(tmp[:-1])
+                # Deal with "mixed" features
+                mixed = cons.split(',')
+                if len(mixed) == 2:
+                    # CDS is second
+                    if mixed[1][1:4] == 'CDS':
+                        cons = str(mixed[1][1:-1])+", "+mixed[0]+"\n"
+                # Work with CDS
+                if cons.strip() != '' and cons.split(' ')[0] == 'CDS':
+                    if ftype.find("substitution") != -1:
+                        # 0      1         2       3    4      5       6      7
+                        #class|sub_type|locus_tag|base|codon|region|old_aa|new_aa|
+                        #   8        9
+                        #protein|correlated
+                        dat = ('substitution',) + parsers.parse_substitution(cons)
+                    elif ftype.find("insertion") != -1:
+                        dat = ('insertion', None) + parsers.parse_insertion(cons)
+                    elif ftype.find("deletion") != -1:
+                        dat = ('deletion', None) + parsers.parse_deletion(cons)
+                    else:
+                        raise Exception("Unsupported. Only SNPs & INDELS")
+                                # Support for: 'tRNA', 'gene', 'rRNA'
+                    dat = list(dat)
+                    dat[3] = int(dat[3])
+                    dat[4] = int(dat[4])
+                elif cons.strip() != '' and cons.split(' ')[0] in misc_set:
+                    if ftype.find("substitution") != -1:
+                        dat = (('substitution',) +
+                                        parsers.parse_substitution_misc(cons))
+                    elif ftype.find("insertion") != -1:
+                        dat = (('insertion', None) +
+                                        parsers.parse_insertion_misc(cons))
+                    elif ftype.find("deletion") != -1:
+                        dat = (('deletion', None) +
+                                        parsers.parse_deletion_misc(cons))
+                    else:
+                        raise Exception("Unsupported. Only SNPs & INDELS")
+                    dat = list(dat)
+                    dat[3] = int(dat[3])
+                else:
+                    dat = [ftype.split('-')[0]]+[None]*9
+            obs_count = parsers.parse_evidence(evidence)
+            json = {"id" : strain+'_'+ref_id+'_'+str(pos),
+                "StrainID" : strain,
+                "Position" : pos,
+                "LocusTag" : dat[2],
+                "Class" : dat[0],
+                "SubClass" : dat[1],
+                "RefBase" : old,
+                "ChangeBase" : new,
+                "CDSBaseNum": dat[3],
+                "CDSAANum": dat[4],
+                "CDSRegion": dat[5],
+                "RefAA" : dat[6],
+                "ChangeAA" : dat[7],
+                "Product" : dat[8],
+                "CorrelatedChange" : dat[9],
+                "Evidence" : obs_count
+                }
+        parsed_list.append(json)
+    print stats
     return parsed_list
 
 

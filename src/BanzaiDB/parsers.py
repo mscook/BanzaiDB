@@ -20,14 +20,21 @@ def parse_evidence(evidence):
     """
     From an evidence string/element return a dictionary or obs/counts
 
+    Updated where to handle 'N'
+
+    In this case we set N = -1
+
     :param evidence: an evidence string. It looks something like this -
                         Ax27 AGCAx1 AGCAATTAATTAAAATAAx
     """
     obs_count = {}
     elem = evidence.split(' ')
-    for e in elem:
-        obs, count = e.split('x')
-        obs_count[obs] = int(count)
+    if elem == ['']:
+        obs_count['N'] = -1
+    else:
+        for e in elem:
+            obs, count = e.split('x')
+            obs_count[obs] = int(count)
     return obs_count
 
 
