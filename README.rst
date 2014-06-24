@@ -22,6 +22,11 @@
 What is BanzaiDB?
 -----------------
 
+**Please use the 0.1.1 release (https://github.com/mscook/BanzaiDB/releases). 
+It is an interim version before merging the nway-any branch. All versions 
+including 0.1.1 made some significant assumptions that are currently being 
+improved.**
+
 BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing 
 (NGS) analysis with a NoSQL_ database. We use the RethinkDB_ NoSQL database.
 

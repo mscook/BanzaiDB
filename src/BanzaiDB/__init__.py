@@ -1,5 +1,5 @@
 __title__          = 'BanzaiDB'
-__version__       = '0.1'
+__version__       = '0.1.1'
 __description__   = "Database for Banzai NGS pipeline tool"
 __author__        = 'Mitchell Stanton-Cook'
 __author_email__  = 'm.stantoncook@gmail.com'

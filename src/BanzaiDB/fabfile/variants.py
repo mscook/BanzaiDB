@@ -22,6 +22,8 @@ from BanzaiDB import converters
 from BanzaiDB import misc
 from BanzaiDB import imaging
 
+__version__ = 0.1.1
+
 TABLE = 'variants'
 
 
