@@ -71,7 +71,7 @@ def nway_reportify(nway_any_file):
         return parsed
 
 
-def convert_standard(cons, ftype):
+def extract_consequences(cons, ftype):
     """
     Extracts out the data from a consequences line
 
@@ -164,36 +164,36 @@ def nesoni_report_to_JSON(reportified):
             elif ftype == "substitution" and new.find('-') != -1:
                 # Deletion hidden in substitution
                 ftype = 'deletion'
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             elif ftype == "substitution" and len(new) > 1:
                 # Insertion hidden in substitution
                 ftype = 'insertion'
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             elif ftype == "deletion" and new.find('-') == -1 and len(new) == 1:
                 # Substitution hidden in deletions
                 ftype = 'substitution'
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             elif ftype == "deletion" and new.find('-') == -1 and len(new) > 1:
                 # Insertion hidden in deletions
                 ftype = 'insertion'
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             elif ftype == "insertion" and new.find('-') != -1:
                 # Deletion hidden in insertions
                 ftype = 'deletion'
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             elif ftype == "insertion" and new.find('-') == -1 and len(new) == 1:
                 # Substitution hidden in insertions
                 ftype = 'substitution'
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             # We have the same change state across all strains
             else:
-                dat = convert_standard()
+                dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             obs_count = parsers.parse_evidence(evidence)
             json = {"id": strain+'_'+ref_id+'_'+str(pos),
