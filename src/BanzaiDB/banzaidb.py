@@ -22,6 +22,7 @@ from   rethinkdb.errors import RqlRuntimeError
 
 from BanzaiDB import core
 from BanzaiDB import database
+from BanzaiDB import misc
 
 """
 BanzaiDB
@@ -47,7 +48,7 @@ __doc__ = " %s v%s - %s (%s)" % ( __title__,
                                   __description__,
                                   __url__)
 
-
+BLOCKS = 300
 
 def init_database_with_default_tables(args):
     """
@@ -130,7 +131,9 @@ def populate_mapping(args):
     with database.make_connection() as connection:
         parsed, stats = core.nesoni_report_to_JSON(core.nway_reportify(infile))
         # Insert all variants
-        inserted = r.table('variants').insert(parsed).run(connection)
+        chunks = misc.chunk_list(parsed, BLOCKS)
+        for chunk in chunks:
+            inserted = r.table('variants').insert(parsed).run(connection)
         print "Mapping statistics"
         print "Strain,Variants"
         for sid, count in stats.items():

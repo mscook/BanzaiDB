@@ -25,6 +25,14 @@ def create_feature(begin, end, type, strand=None):
 
     :returns: a Bio.SeqFeature object
     """
-    location = SeqFeature.FeatureLocation(SeqFeature.ExactPosition(begin), 
+    location = SeqFeature.FeatureLocation(SeqFeature.ExactPosition(begin),
                                           SeqFeature.ExactPosition(end))
     return SeqFeature.SeqFeature(location, type=type, strand=strand)
+
+
+def chunk_list(l, n):
+    """
+    Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
