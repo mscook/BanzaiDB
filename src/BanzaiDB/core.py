@@ -148,7 +148,7 @@ def nesoni_report_to_JSON(reportified):
     for position in reportified:
         for elem in position:
             # Debugging
-            print elem
+            # print elem
             ref_id, pos, strain, old, ftype, new, evidence, cons = elem
             ref_id = '.'.join(ref_id.split('.')[:-1])
             # Initialise the stats...
@@ -214,7 +214,9 @@ def nesoni_report_to_JSON(reportified):
                     "Evidence": obs_count
                     }
         parsed_list.append(json)
-    # print stats
+    print "Strain,Variants"
+    for k, v in stats.items():
+        print "%s,%s" % (k, v)
     return parsed_list
 
 
