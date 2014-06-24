@@ -214,10 +214,7 @@ def nesoni_report_to_JSON(reportified):
                     "Evidence": obs_count
                     }
         parsed_list.append(json)
-    print "Strain,Variants"
-    for k, v in stats.items():
-        print "%s,%s" % (k, v)
-    return parsed_list
+    return parsed_list, stats
 
 
 def reference_genome_features_to_JSON(genome_file):

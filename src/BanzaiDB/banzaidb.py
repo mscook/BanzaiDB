@@ -128,21 +128,16 @@ def populate_mapping(args):
     infile = infile[0]
     ref = os.path.join(run_path+'/', ref+'/reference.gbk')
     with database.make_connection() as connection:
-        parsed = core.nesoni_report_to_JSON(core.nway_reportify(infile))
-        count = len(parsed)
-        exit()
-        if count != 0:
-            inserted = r.table('variants').insert(parsed).run(connection)
-            strain_JSON = {"StrainID": parsed[0]['StrainID'],
-                        "VarCount": count,
-                        "id": parsed[0]['StrainID']}
-            inserted = r.table('strains').insert(strain_JSON).run(connection)
-        else:
-            print "No variants for %s. Skipped" % (report)
-            s = report.split('/')[-2]
-            strain_JSON = {"StrainID" : s,
-                        "VarCount" : 0,
-                        "id" : s}
+        parsed, stats = core.nesoni_report_to_JSON(core.nway_reportify(infile))
+        # Insert all variants
+        inserted = r.table('variants').insert(parsed).run(connection)
+        print "Mapping statistics"
+        print "Strain,Variants"
+        for sid, count in stats.items():
+            print "%s,%s" % (sid, count)
+            strain_JSON = {"StrainID": sid,
+                            "VarCount": count,
+                            "id": sid}
             inserted = r.table('strains').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
