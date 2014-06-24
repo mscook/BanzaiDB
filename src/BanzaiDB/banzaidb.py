@@ -48,7 +48,7 @@ __doc__ = " %s v%s - %s (%s)" % ( __title__,
                                   __description__,
                                   __url__)
 
-BLOCKS = 300
+BLOCKS = 10000
 
 def init_database_with_default_tables(args):
     """
@@ -133,7 +133,7 @@ def populate_mapping(args):
         # Insert all variants
         chunks = misc.chunk_list(parsed, BLOCKS)
         for chunk in chunks:
-            inserted = r.table('variants').insert(parsed).run(connection)
+            inserted = r.table('variants').insert(chunk).run(connection)
         print "Mapping statistics"
         print "Strain,Variants"
         for sid, count in stats.items():
