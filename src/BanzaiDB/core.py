@@ -57,16 +57,20 @@ def nway_reportify(nway_any_file):
             num_strains = len(strains)/3
             strains = strains[:num_strains]
             for line in f:
+                uncalled = False
                 cur = line.split("\t")
                 ref_id, position, v_class, ref_base = cur[0], int(cur[1]), cur[2], cur[3]
                 changes = cur[4:num_strains+4]
+                if 'N' in changes:
+                    uncalled = True
                 evidence = cur[num_strains+4:(2*(num_strains))+4]
                 consequences = cur[(2*(num_strains))+4:-1]
                 # Something is broken if not true -
                 assert len(strains) == len(changes) == len(evidence)
                 results = zip([ref_id]*num_strains, [position]*num_strains, strains,
                               [ref_base]*num_strains, [v_class]*num_strains,
-                              changes, evidence, consequences)
+                              changes, evidence, consequences,
+                              [uncalled]*num_strains)
                 parsed.append(results)
         return parsed
 
@@ -148,9 +152,7 @@ def nesoni_report_to_JSON(reportified):
     for position in reportified:
         for elem in position:
             skip = False
-            # Debugging
-            # print elem
-            ref_id, pos, strain, old, ftype, new, evidence, cons = elem
+            ref_id, pos, strain, old, ftype, new, evidence, cons, uncalled = elem
             ref_id = '.'.join(ref_id.split('.')[:-1])
             # Initialise the stats...
             if strain not in stats:
@@ -158,10 +160,11 @@ def nesoni_report_to_JSON(reportified):
             if new == old:
                 # Have no change
                 #dat = ["conserved"]+[None]*9
-                skip == True
+                skip = True
             elif new == 'N':
                 # Have an uncalled base
-                dat = ["uncalled"]+[None]*9
+                #dat = ["uncalled"]+[None]*9
+                skip = True
             # Check for mixtures...
             elif ftype == "substitution" and new.find('-') != -1:
                 # Deletion hidden in substitution
@@ -214,7 +217,8 @@ def nesoni_report_to_JSON(reportified):
                         "ChangeAA": dat[7],
                         "Product": dat[8],
                         "CorrelatedChange": dat[9],
-                        "Evidence": obs_count
+                        "Evidence": obs_count,
+                        "UncalledBlock": uncalled
                         }
                 parsed_list.append(json)
     return parsed_list, stats
