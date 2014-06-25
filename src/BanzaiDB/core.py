@@ -147,6 +147,7 @@ def nesoni_report_to_JSON(reportified):
     parsed_list = []
     for position in reportified:
         for elem in position:
+            skip = False
             # Debugging
             # print elem
             ref_id, pos, strain, old, ftype, new, evidence, cons = elem
@@ -156,7 +157,8 @@ def nesoni_report_to_JSON(reportified):
                 stats[strain] = 0
             if new == old:
                 # Have no change
-                dat = ["conserved"]+[None]*9
+                #dat = ["conserved"]+[None]*9
+                skip == True
             elif new == 'N':
                 # Have an uncalled base
                 dat = ["uncalled"]+[None]*9
@@ -196,25 +198,25 @@ def nesoni_report_to_JSON(reportified):
                 dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             obs_count = parsers.parse_evidence(evidence)
-            json = {"id": strain+'_'+ref_id+'_'+str(pos),
-                    "StrainID": strain,
-                    "Position": pos,
-                    "LocusTag": dat[2],
-                    "Class": dat[0],
-                    "SubClass": dat[1],
-                    "RefBase": old,
-                    "ChangeBase": new,
-                    "CDSBaseNum": dat[3],
-                    "CDSAANum": dat[4],
-                    "CDSRegion": dat[5],
-                    "RefAA": dat[6],
-                    "ChangeAA": dat[7],
-                    "Product": dat[8],
-                    "CorrelatedChange": dat[9],
-                    "Evidence": obs_count
-                    }
-
-            parsed_list.append(json)
+            if not skip:
+                json = {"id": strain+'_'+ref_id+'_'+str(pos),
+                        "StrainID": strain,
+                        "Position": pos,
+                        "LocusTag": dat[2],
+                        "Class": dat[0],
+                        "SubClass": dat[1],
+                        "RefBase": old,
+                        "ChangeBase": new,
+                        "CDSBaseNum": dat[3],
+                        "CDSAANum": dat[4],
+                        "CDSRegion": dat[5],
+                        "RefAA": dat[6],
+                        "ChangeAA": dat[7],
+                        "Product": dat[8],
+                        "CorrelatedChange": dat[9],
+                        "Evidence": obs_count
+                        }
+                parsed_list.append(json)
     return parsed_list, stats
 
 
