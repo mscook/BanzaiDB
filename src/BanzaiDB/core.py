@@ -201,7 +201,10 @@ def nesoni_report_to_JSON(reportified):
                 dat = extract_consequences(cons, ftype)
                 stats[strain] = stats[strain]+1
             obs_count = parsers.parse_evidence(evidence)
+            # Some simple tests
+            the_classes = ['insertion', 'deletion', 'substitution']
             if not skip:
+                assert dat[0] in the_classes
                 json = {"id": strain+'_'+ref_id+'_'+str(pos),
                         "StrainID": strain,
                         "Position": pos,
