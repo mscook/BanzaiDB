@@ -156,10 +156,10 @@ def nesoni_report_to_JSON(reportified):
                 stats[strain] = 0
             if new == old:
                 # Have no change
-                dat = [None]*10
+                dat = ["conserved"]+[None]*9
             elif new == 'N':
                 # Have an uncalled base
-                dat = ["Uncalled"]+[None]*9
+                dat = ["uncalled"]+[None]*9
             # Check for mixtures...
             elif ftype == "substitution" and new.find('-') != -1:
                 # Deletion hidden in substitution
