@@ -1,0 +1,9 @@
+reportlab
+rethinkdb
+biopython
+fabric
+tablib
+argparse
+coverage
+ddt
+tox
