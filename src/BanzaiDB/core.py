@@ -213,7 +213,8 @@ def nesoni_report_to_JSON(reportified):
                     "CorrelatedChange": dat[9],
                     "Evidence": obs_count
                     }
-        parsed_list.append(json)
+
+            parsed_list.append(json)
     return parsed_list, stats
 
 
