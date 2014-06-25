@@ -48,7 +48,7 @@ __doc__ = " %s v%s - %s (%s)" % ( __title__,
                                   __description__,
                                   __url__)
 
-BLOCKS = 10000
+BLOCKS = 2500
 
 def init_database_with_default_tables(args):
     """
