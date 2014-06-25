@@ -130,6 +130,19 @@ def fetch_given_strain_position(strain, position):
     return result
 
 
+@task
+def get_variant_stats(strains):
+    """
+    Return (and print) variant stats given 1 or more space delimited strain IDs
+
+    Breakdown of counts:
+        * substitution (syn/non-sys)
+        * insertion
+        * deletion
+    """
+    results = {}
+    with database.make_connection() as connection:
+        pass
 
 @task
 def get_variants_in_range(start, end, verbose=True,
@@ -344,7 +357,6 @@ def strain_variant_stats(strains=None, verbose=True):
     :returns: a list of results in CSV
     """
     verbose = ast.literal_eval(str(verbose))
-    conn = make_a_connection()
     ROW = 'StrainID'
     strains = get_required_strains(strains)
     header = "StrainID,Total Variants,Substitution,Insertion,Deletion"
@@ -352,18 +364,18 @@ def strain_variant_stats(strains=None, verbose=True):
     results.append(header)
     if verbose:
         print header
-    for strain in strains:
-        tmp = []
-        tmp.append(r.table(TABLE).filter({'StrainID': strain}).count().run(conn))
-        classes = ['substitution', 'insertion', 'deletion']
-        for c in classes:
-            tmp.append(r.table(TABLE).filter({'StrainID': strain,
-                                              'Class': c}).count().run(conn))
-        cur = "%s,%i,%i,%i,%i" % (strain, tmp[0], tmp[1], tmp[2], tmp[3])
-        if verbose:
-            print cur
-        results.append(cur)
-    conn.close()
+    with database.make_connection() as connection:
+        for strain in strains:
+            tmp = []
+            tmp.append(r.table(TABLE).filter({'StrainID': strain}).count().run(connection))
+            classes = ['substitution', 'insertion', 'deletion']
+            for c in classes:
+                tmp.append(r.table(TABLE).filter({'StrainID': strain,
+                                                'Class': c}).count().run(connection))
+            cur = "%s,%i,%i,%i,%i" % (strain, tmp[0], tmp[1], tmp[2], tmp[3])
+            if verbose:
+                print cur
+            results.append(cur)
     return results
 
 
