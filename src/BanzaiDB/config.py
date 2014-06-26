@@ -15,6 +15,7 @@
 import os
 import sys
 
+
 class BanzaiDBConfig(object):
     """
     BanzaiDB configuration class
@@ -44,15 +45,15 @@ class BanzaiDBConfig(object):
             * auth_key =  [def = '']
         """
         cfg = {}
-        cfg['db_host']  = 'localhost'
-        cfg['port']     = 28015
-        cfg['db_name']  = 'Banzai'
+        cfg['db_host'] = 'localhost'
+        cfg['port'] = 28015
+        cfg['db_name'] = 'Banzai'
         cfg['auth_key'] = ''
         try:
             with open(os.path.expanduser('~/')+'.BanzaiDB.cfg') as fin:
-                #sys.stderr.write("Using a BanzaiDB config file\n")
+                # sys.stderr.write("Using a BanzaiDB config file\n")
                 for line in fin:
-                    if (line.startswith('db_host')  or
+                    if (line.startswith('db_host') or
                             line.startswith('port') or
                             line.startswith('db_name') or
                             line.startswith('auth_key')):
