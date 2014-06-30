@@ -15,6 +15,8 @@ import tablib
 import json
 import sys
 
+from BanzaiDB import errors
+
 """
 converters
 ==========
@@ -23,30 +25,38 @@ Converts data representation formats from one to another.
 """
 
 
-def convert_from_JSON_to_CSV(json_data, header=False, fmt='csv'):
+def convert_from_JSON_to_CSV(json_data, header=False):
     """
-    Converts JSON to CSV
+    Converts a single JSON element to CSV
 
-    :param json_data: JSON object
-    :param header: [optional]
-    :param fmt: [optional] only csv.
+    .. note:: this will not handle nested JSON. Will need to used something
+              like https://github.com/evidens/json2csv to achieve this
+
+    :param json_data: the JSON
+    :param header: [optional] include the and return the header
     """
     json_str = json.dumps(json_data)
-    supported = ['csv']
-    if fmt in supported:
-        data = tablib.Dataset()
-        data.json = '['+json_str+']'
-        if header:
-            tmp = data.csv.split('\n')
-            return tmp[0]+"\n"+tmp[1]
-        else:
-            return data.csv.split('\n')[1]
+    data = tablib.Dataset()
+    data.json = '['+json_str+']'
+    tmp = data.csv.split('\n')
+    if tmp[1].find('}') != -1:
+        raise errors.NestedJSONError(data.json)
+    if tmp[0] and tmp[1] == '':
+        raise errors.CouldNotParseJSONError(data.json)
+    if header:
+        return tmp[0].rstrip()+"\n"+tmp[1].rstrip()
     else:
-        raise Exception("Only output in CSV is supported")
+        return tmp[1].rstrip()
 
 
-def convert_from_csv_to_JSON(csv_data, header):
+def convert_from_csv_to_JSON(csv_data, header=False):
     """
+    Converts from CSV to JSON
+
+    NotImplemented yet!
+
+    :param json_data: csv data
+    :param header: [optional]
     """
-    print "NotImplemented yet!"
+    sys.stderr.write("NotImplemented yet!")
     sys.exit(1)
