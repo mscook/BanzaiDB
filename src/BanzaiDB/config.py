@@ -32,7 +32,14 @@ class BanzaiDBConfig(object):
             return None
 
     def __setitem__(self, key, item):
-        self.config[key] = item
+        allowed = ['db_host', 'port', 'db_name', 'auth_key']
+        if key in allowed:
+            if key == 'port':
+                self.config[key] = int(item)
+            else:
+                self.config[key] = item
+        else:
+            raise KeyError('Must be one of '+str(allowed))
 
     def read_config(self):
         """
@@ -43,6 +50,8 @@ class BanzaiDBConfig(object):
             * port     =  [def = 28015]
             * db_name  =  [def = Banzai]
             * auth_key =  [def = '']
+
+        .. note:: updated so that "port" is stored as an integer
         """
         cfg = {}
         cfg['db_host'] = 'localhost'
@@ -58,14 +67,22 @@ class BanzaiDBConfig(object):
                             line.startswith('db_name') or
                             line.startswith('auth_key')):
                         option, val = line.split('=')
-                        cfg[option.strip()] = val.strip()
+                        option, val = option.strip(), val.strip()
+                        if option == 'port':
+                            val = int(val)
+                        cfg[option] = val
         except IOError:
             sys.stderr.write("Using RethinkDB defaults\n")
         return cfg
 
     def dump_items(self):
         """
-        Prints all set configuration options to STDOUT
+        Returns a string of all configuration options
+
+        :returns: a new line delimited string of all config options
         """
+        config_str = ''
         for key, value in self.config.items():
-            print str(key)+" = "+str(value)+"\n"
+            cur = str(key)+" = "+str(value)+"\n"
+            config_str = config_str+cur
+        return config_str[:-1]
