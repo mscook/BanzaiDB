@@ -1,9 +1,4 @@
-reportlab
-rethinkdb
-biopython
-fabric
-tablib
-argparse
 coverage
+mock
 ddt
 tox
