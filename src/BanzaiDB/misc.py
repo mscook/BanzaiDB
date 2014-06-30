@@ -1,6 +1,6 @@
 # Copyright 2013-2014 Mitchell Stanton-Cook Licensed under the
 # Educational Community License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may
+# notte_feature use this file except in compliance with the License. You may
 # obtain a copy of the License at
 #
 # http://www.osedu.org/licenses/ECL-2.0
@@ -22,7 +22,7 @@ def create_feature(begin, end, feat_type, strand=None):
     :param begin: where the variant starts
     :param end: where the variaants ends
     :param type: if a substitution or INDEL
-    :param strand: [dafault] None of -1/1
+    :param strand: [default] None of -1/1
 
     :type begin: int
     :type end: int
