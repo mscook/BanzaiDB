@@ -1,4 +1,4 @@
-# Copyright 2013 Mitchell Stanton-Cook Licensed under the
+# Copyright 2013-2014 Mitchell Stanton-Cook Licensed under the
 # Educational Community License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may
 # obtain a copy of the License at
@@ -15,16 +15,27 @@
 from Bio import SeqFeature
 
 
-def create_feature(begin, end, type, strand=None):
+def create_feature(begin, end, feat_type, strand=None):
     """
     Creates a BioPython SeqFeature record
 
     :param begin: where the variant starts
     :param end: where the variaants ends
     :param type: if a substitution or INDEL
+    :param strand: [dafault] None of -1/1
+
+    :type begin: int
+    :type end: int
+    :type feat_type: string (typically one of insertion, deletion, substitution)
+    :type stand: None or int
 
     :returns: a Bio.SeqFeature object
     """
-    location = SeqFeature.FeatureLocation(SeqFeature.ExactPosition(begin), 
-                                          SeqFeature.ExactPosition(end))
-    return SeqFeature.SeqFeature(location, type=type, strand=strand)
+    location = SeqFeature.FeatureLocation(SeqFeature.ExactPosition(int(begin)),
+                                          SeqFeature.ExactPosition(int(end)))
+    if strand is not None:
+        return SeqFeature.SeqFeature(location, type=feat_type,
+                                     strand=int(strand))
+    else:
+        return SeqFeature.SeqFeature(location, type=feat_type,
+                                     strand=strand)
