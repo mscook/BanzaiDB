@@ -113,56 +113,69 @@ def nesoni_report_to_JSON(report_file):
 
 def reference_genome_features_to_JSON(genome_file):
     """
-    From genome reference (GBK format) convert CDS & xRNA features to JSON
+    From genome reference (GBK format) convert CDS, gene & RNA features to JSON
 
-    See: tables.rst
+    The following 2 are really good resources:
+        * http://www.ncbi.nlm.nih.gov/books/NBK63592/
+        * http://www.ncbi.nlm.nih.gov/genbank/genomesubmit_annotation
+
+    .. note:: also see tables.rst for detailed description of the JSON
+              schema
 
     :param genome_file: the fullpath as a string to the genbank file
 
     :returns: a JSON representing the the reference and a list of JSON
               containing information on the features
     """
-    misc_set = ['tRNA', 'rRNA']
+    misc_set = ['tRNA', 'rRNA', 'tmRNA', 'ncRNA']
     with open(genome_file) as fin:
         genome = SeqIO.read(fin, "genbank")
         gd, gn, gid = genome.description, genome.name, genome.id
-        print "Adding %s into DB" % (gd)
-        JSON_r = {'RefID' : gid,
-                  'RefName' : gd,
-                  'id' : gn}
+        print "Adding %s into the RethinkDB instance" % (gd)
+        JSON_r = {'revision': int(gid.split('.')[-1]),
+                  'reference_name': gd,
+                  'id': gn}
         parsed_list = []
         for feat in genome.features:
-            # CDS features
+            start = int(feat.location.start.position)
+            JSON_f = {'sequence': str(feat.extract(genome.seq)),
+                      'start': start,
+                      'end': int(feat.location.end.position),
+                      'strand': int(feat.strand),
+                      'reference_id': gid,
+                      'product': None,
+                      'translation': None,
+                      'locus_tag': None}
+            # Handle CDS, gene, tRNA & rRNA features
+            # Do CDS
             if feat.type == 'CDS':
-                start = int(feat.location.start.position)
-                JSON_f = {'LocusTag' : feat.qualifiers['locus_tag'][0],
-                          'Sequence' : str(feat.extract(genome.seq)),
-                          'Translation' : feat.qualifiers['translation'][0],
-                          'Start' : start,
-                          'End' : int(feat.location.end.position),
-                          'Strand': int(feat.strand),
-                          'Product' : feat.qualifiers['product'][0],
-                          'RefID': gid,
-                          'id': gid+"_"+str(start)
-                        }
+                locus_tag = feat.qualifiers['locus_tag'][0]
+                JSON_f['id'] = gid+"_"+locus_tag+"_CDS"
+                JSON_f['locus_tag'] = locus_tag
+                if 'pseudo' not in feat.qualifiers:
+                    JSON_f['translation'] = feat.qualifiers['translation'][0]
+                    JSON_f['product'] = feat.qualifiers['product'][0]
+                else:
+                    JSON_f['product'] = 'pseudo'
                 parsed_list.append(JSON_f)
+            # Do gene
+            elif feat.type == 'gene':
+                locus_tag = feat.qualifiers['locus_tag'][0]
+                JSON_f['id'] = gid+"_"+locus_tag+"_gene"
+                if 'pseudo' not in feat.qualifiers:
+                    try:
+                        JSON_f['product'] = feat.qualifiers['gene'][0]
+                    except:
+                        pass
+                else:
+                    JSON_f['product'] = 'pseudo'
+                parsed_list.append(JSON_f)
+            # Do other (*RNA)
             elif feat.type in misc_set:
-                start = int(feat.location.start.position)
-                try:
-                    product = feat.qualifiers['product'][0]
-                except KeyError:
-                    product = "Possible pseudo"
-                JSON_f = {'LocusTag' : feat.qualifiers['locus_tag'][0],
-                          'Sequence' : str(feat.extract(genome.seq)),
-                          'Translation' : None,
-                          'Start' : start,
-                          'End' : int(feat.location.end.position),
-                          'Strand': int(feat.strand),
-                          'Product' : product,
-                          'RefID': gid,
-                          'id': gid+"_"+str(start)
-                        }
+                JSON_f['product'] = feat.qualifiers['product'][0]
+                JSON_f['id'] = gid+"_"+str(JSON_f['start'])+"-"+str(JSON_f['end'])
                 parsed_list.append(JSON_f)
             else:
-                pass
+                print "Skipped feature at %i to %i " % (JSON_f['start'],
+                                                        JSON_f['end'])
         return JSON_r, parsed_list
