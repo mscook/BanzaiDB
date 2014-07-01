@@ -18,3 +18,14 @@ class CouldNotParseJSONError(Exception):
 
     def __str__(self):
         return repr(self.code)
+
+
+class InvalidDBName(Exception):
+    """
+    RethinkDB only likes database names that match "^[a-zA-Z0-9_]+$"
+    """
+    def __init__(self, code):
+        self.code = code
+
+    def __str__(self):
+        return repr(self.code)

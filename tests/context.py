@@ -10,3 +10,4 @@ from BanzaiDB import errors
 from BanzaiDB import config
 from BanzaiDB import misc
 from BanzaiDB import core
+from BanzaiDB import database
