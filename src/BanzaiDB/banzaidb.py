@@ -199,47 +199,62 @@ def db_query(args):
         sys.exit()
 
 
-if __name__ == '__main__':
+def create_parser():
+    """
+    Create the CLI parser
+
+    :returns: a parser with subparsers: init, populate, update & query --------
+    """
+    parser = argparse.ArgumentParser(description=__doc__, epilog=epi)
+    parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                        help='verbose output')
+    subparsers = parser.add_subparsers(help='Available commands:')
+    init_p = subparsers.add_parser('init', help='Initialise a DB')
+    init_p.add_argument('--force', action='store_true', default=False,
+                        help=('Reinitilise a database & tables even if '
+                              'already exists'))
+    populate_p = subparsers.add_parser('populate',
+                                       help=('Populates a database with '
+                                             'results of an experiment'))
+    populate_p.add_argument('run_type', action='store',
+                            choices=('qc', 'mapping', 'assembly', 'ordering',
+                                     'annotation'),
+                            help=('Populate the database with data from the '
+                                  'given pipeline step'))
+    populate_p.add_argument('run_path', action='store',
+                            help=('Full path to a directory containing '
+                                  'finished experiments from a pipeline run'))
+    update_p = subparsers.add_parser('update', help=('Updates a database '
+                                                     'with results from a '
+                                                     'new experiment'))
+    update_p.add_argument('run_type', action='store',
+                          choices=('qc', 'mapping', 'assembly', 'ordering',
+                                   'annotation'),
+                          help=('Populate the database with data from the '
+                                'given pipeline step'))
+    update_p.add_argument('run_path', action='store',
+                          help=('Full path to a directory containing finished '
+                                'experiments from a pipeline run'))
+    query_p = subparsers.add_parser('query', help=('List available or provide '
+                                                   'database query functions'))
+    query_p.add_argument('-l', '--list', action='store_true',
+                         default=False, help='List the pre-defined queries')
+    query_p.add_argument('-r', '--ReQL', action='store', default='',
+                         help='A ReQL statement')
+    init_p.set_defaults(func=init_database_with_default_tables)
+    populate_p.set_defaults(func=populate_database_with_data)
+    update_p.set_defaults(func=updateDB)
+    query_p.set_defaults(func=db_query)
+    return parser
+
+
+def main():
+    """
+    Main function - essentially calls the CLI parser & directs execution
+    """
     try:
         start_time = time.time()
-        parser = argparse.ArgumentParser(description=__doc__, epilog=epi)
-        parser.add_argument('-v', '--verbose', action='store_true',
-                                        default=False, help='verbose output')
-        subparsers = parser.add_subparsers(help='Available commands:')
-        init_parser   = subparsers.add_parser('init', help='Initialise a DB')
-        init_parser.add_argument('--force', action='store_true',
-                    default=False, help=('Reinitilise a database & tables '
-                        'even if already exists'))
-        populate_parser = subparsers.add_parser('populate', help=('Populates '
-                            'a database with results of an experiment'))
-        populate_parser.add_argument('run_type',action='store',
-                    choices=('qc', 'mapping', 'assembly', 'ordering',
-                            'annotation'),
-                    help=('Populate the database with data from the given '
-                          'pipeline step'))
-        populate_parser.add_argument('run_path',action='store',
-                    help=('Full path to a directory containing finished '
-                        'experiments from a pipeline run'))
-        update_parser = subparsers.add_parser('update', help=('Updates a '
-                        'database with results from a new experiment'))
-        update_parser.add_argument('run_type',action='store',
-                    choices=('qc', 'mapping', 'assembly', 'ordering',
-                            'annotation'),
-                    help=('Populate the database with data from the given '
-                          'pipeline step'))
-        update_parser.add_argument('run_path',action='store',
-                    help=('Full path to a directory containing finished '
-                        'experiments from a pipeline run'))
-        query_parser = subparsers.add_parser('query', help=('List available '
-                            'or provide database query functions'))
-        query_parser.add_argument('-l', '--list', action='store_true',
-                    default=False, help='List the pre-defined queries')
-        query_parser.add_argument('-r','--ReQL',action='store', default='',
-                    help='A ReQL statement')
-        init_parser.set_defaults(func=init_database_with_default_tables)
-        populate_parser.set_defaults(func=populate_database_with_data)
-        update_parser.set_defaults(func=updateDB)
-        query_parser.set_defaults(func=db_query)
+        parser = create_parser()
         args = parser.parse_args()
         if args.verbose:
             print "Executing @ " + time.asctime()
@@ -248,12 +263,17 @@ if __name__ == '__main__':
             print "Ended @ " + time.asctime()
             print 'Exec time minutes %f:' % ((time.time() - start_time) / 60.0)
         sys.exit(0)
-    except KeyboardInterrupt, e: # Ctrl-C
+    except KeyboardInterrupt, e:
+        # Ctrl-C
         raise e
-    except SystemExit, e: # sys.exit()
+    except SystemExit, e:
+        # sys.exit()
         raise e
     except Exception, e:
         print 'ERROR, UNEXPECTED EXCEPTION'
         print str(e)
         traceback.print_exc()
-        os._exit(1)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
