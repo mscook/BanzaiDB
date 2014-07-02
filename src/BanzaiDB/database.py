@@ -12,7 +12,6 @@
 # permissions and limitations under the License.
 
 import re
-import sys
 
 import rethinkdb as r
 from rethinkdb.errors import RqlDriverError
@@ -40,6 +39,5 @@ def make_connection():
         connection = r.connect(host=cfg['db_host'], port=cfg['port'],
                                db=cfg['db_name'], auth_key=cfg['auth_key'])
     except RqlDriverError:
-        print "No database connection could be established."
-        sys.exit(1)
+        raise RqlDriverError("No database connection could be established.")
     return connection
