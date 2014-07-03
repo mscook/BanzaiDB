@@ -11,3 +11,4 @@ from BanzaiDB import config
 from BanzaiDB import misc
 from BanzaiDB import core
 from BanzaiDB import database
+from BanzaiDB import banzaidb
