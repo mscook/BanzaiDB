@@ -245,7 +245,7 @@ def create_parser():
     populate_p.set_defaults(func=populate_database_with_data)
     update_p.set_defaults(func=updateDB)
     query_p.set_defaults(func=db_query)
-    return parser
+    return parser.parse_args()
 
 
 def main():
@@ -254,8 +254,7 @@ def main():
     """
     try:
         start_time = time.time()
-        parser = create_parser()
-        args = parser.parse_args()
+        args = create_parser()
         if args.verbose:
             print "Executing @ " + time.asctime()
         args.func(args)
