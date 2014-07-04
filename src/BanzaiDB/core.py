@@ -59,9 +59,9 @@ def nesoni_report_to_JSON(report_file):
             if cons.strip() != '' and cons.split(' ')[0] == 'CDS':
                 if ftype.find("substitution") != -1:
                     # 0      1         2       3    4      5       6      7
-                    #class|sub_type|locus_tag|base|codon|region|old_aa|new_aa|
+                    # class|sub_type|locus_tag|base|codon|region|old_aa|new_aa|
                     #   8        9
-                    #protein|correlated
+                    # protein|correlated
                     dat = ('substitution',) + parsers.parse_substitution(cons)
                 elif ftype.find("insertion") != -1:
                     dat = ('insertion', None) + parsers.parse_insertion(cons)
@@ -76,35 +76,35 @@ def nesoni_report_to_JSON(report_file):
             elif cons.strip() != '' and cons.split(' ')[0] in misc_set:
                 if ftype.find("substitution") != -1:
                     dat = (('substitution',) +
-                                    parsers.parse_substitution_misc(cons))
+                           parsers.parse_substitution_misc(cons))
                 elif ftype.find("insertion") != -1:
                     dat = (('insertion', None) +
-                                    parsers.parse_insertion_misc(cons))
+                           parsers.parse_insertion_misc(cons))
                 elif ftype.find("deletion") != -1:
                     dat = (('deletion', None) +
-                                    parsers.parse_deletion_misc(cons))
+                           parsers.parse_deletion_misc(cons))
                 else:
                     raise Exception("Unsupported. Only SNPs & INDELS")
                 dat = list(dat)
                 dat[3] = int(dat[3])
             else:
                 dat = [ftype.split('-')[0]]+[None]*9
-            json = {"id" : strain+'_'+ref_id+'_'+pos,
-                    "StrainID" : strain,
-                    "Position" : int(pos),
-                    "LocusTag" : dat[2],
-                    "Class" : dat[0],
-                    "SubClass" : dat[1],
-                    "RefBase" : old,
-                    "ChangeBase" : new,
+            json = {"id": strain+'_'+ref_id+'_'+pos,
+                    "StrainID": strain,
+                    "Position": int(pos),
+                    "LocusTag": dat[2],
+                    "Class": dat[0],
+                    "SubClass": dat[1],
+                    "RefBase": old,
+                    "ChangeBase": new,
                     "CDSBaseNum": dat[3],
                     "CDSAANum": dat[4],
                     "CDSRegion": dat[5],
-                    "RefAA" : dat[6],
-                    "ChangeAA" : dat[7],
-                    "Product" : dat[8],
-                    "CorrelatedChange" : dat[9],
-                    "Evidence" : obs_count
+                    "RefAA": dat[6],
+                    "ChangeAA": dat[7],
+                    "Product": dat[8],
+                    "CorrelatedChange": dat[9],
+                    "Evidence": obs_count
                     }
             parsed_list.append(json)
     print "\t %i variants parsed" % len(parsed_list)
@@ -121,6 +121,8 @@ def reference_genome_features_to_JSON(genome_file):
 
     .. note:: also see tables.rst for detailed description of the JSON
               schema
+
+    .. warning:: do not think that this handles misc_features
 
     :param genome_file: the fullpath as a string to the genbank file
 

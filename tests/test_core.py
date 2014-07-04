@@ -1,7 +1,11 @@
 from context import core
 
 import unittest
+import mock
 
+
+# TODO: Add further "test" genomes.
+# TODO: How are "misc_features handled?
 
 class CoreTest(unittest.TestCase):
     """
@@ -35,6 +39,21 @@ class CoreTest(unittest.TestCase):
         self.assertEquals(other_count, 89+22+1)
         self.assertEquals(CDS_p, 25)
         self.assertEquals(gene_p, 25)
+
+    def test_nesoni_report_to_JSON(self):
+        """
+        """
+        pass
+        ## For the file open recipie see:
+        ## http://www.voidspace.org.uk/python/mock/helpers.html#mock-open
+        #m = mock.mock_open(read_data='')
+        #with mock.patch('__builtin__.open', m, create=True):
+        #    cfg = config.BanzaiDBConfig()
+        #    # m.assert_called_once_with('/Users/mscook/.BanzaiDB.cfg')
+        #    self.assertEqual(cfg['db_host'], 'localhost')
+        #    self.assertEqual(cfg['port'], 28015)
+        #    self.assertEqual(cfg['db_name'], 'Banzai')
+        #    self.assertEqual(cfg['auth_key'], '')
 
 
 if __name__ == '__main__':
