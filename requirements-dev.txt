@@ -2,3 +2,4 @@ coverage
 mock
 ddt
 tox
+sphinx
