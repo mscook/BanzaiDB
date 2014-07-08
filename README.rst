@@ -18,6 +18,8 @@
    :target: https://drone.io/github.com/mscook/BanzaiDB
    :alt: Build status (Drone.io)
 
+(Using landscape.io and drone.io)
+
 
 What is BanzaiDB?
 -----------------
