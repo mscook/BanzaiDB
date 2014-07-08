@@ -17,13 +17,6 @@ import sys
 
 from BanzaiDB import errors
 
-"""
-converters
-==========
-
-Converts data representation formats from one to another.
-"""
-
 
 def convert_from_JSON_to_CSV(json_data, header=False):
     """
