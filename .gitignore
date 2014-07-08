@@ -14,3 +14,5 @@ _templates
 BanzaiDB.egg-info/
 build/
 dist/
+## Don't store the coverage stuff in the REPO
+tests/.coverage
