@@ -20,7 +20,7 @@ import database
 def get_strains(cfg_object, verbose=True):
     """
     Return/list the strains contained in the database
-    
+
     Collection is 'STRAINS'
     """
     strain_list = []
@@ -35,7 +35,7 @@ def get_strains(cfg_object, verbose=True):
 def get_variant_stats(cfg_object, strain=None):
     """
     Return/list the the stats for the variants
-    
+
     Collection is 'VARIANTS'
     """
     if strain == None:
@@ -90,10 +90,10 @@ def get_core_alignment(cfg_object):
     for hit in variants.find(query, {"Position" : 1, "_id" : 0}):
         positions_all.append(hit.values()[0])
     unique_positions = sorted(list(set(positions_all)))
-    #TODO TODO TODO - below is a hack. We should really store RefName in each 
+    #TODO TODO TODO - below is a hack. We should really store RefName in each
     # varaiant
     refName = reference.find_one({}, {"RefName": 1,  "_id" : 0}).values()[0]
-    # Build the reference align 
+    # Build the reference align
     print ">% s (reference)" % (refName)
     # Build the reference
     for pos in unique_positions:
