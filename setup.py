@@ -69,6 +69,7 @@ setup(
     author_email         = __author_email__,
     url                  = __url__,
     packages             = packages,
+    test_suite           ="tests",
     package_dir          = {__title__: 'src/'+__title__},
     scripts              = ['src/'+__title__+'/'+__title__,],
     package_data         = {__title__: ['fabfile/*.py'],},
