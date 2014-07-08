@@ -15,14 +15,14 @@ from collections import Counter
 import ast
 
 import rethinkdb as r
-from   fabric.api   import task
+from fabric.api import task
 
 from BanzaiDB import database
 from BanzaiDB import converters
 from BanzaiDB import misc
 from BanzaiDB import imaging
 
-#__version__ = 0.1.1
+# __version__ = 0.1.1
 
 TABLE = 'variants'
 
@@ -44,12 +44,13 @@ def get_required_strains(strains):
     """
     strains_list = []
     with database.make_connection() as connection:
-        if strains == None:
+        if strains is None:
             get_strains = r.table('strains').pluck('StrainID').run(connection)
-            strains_list = [e['StrainID'].encode('ascii','ignore') for e in get_strains]
+            strains_list = [e['StrainID'].encode('ascii', 'ignore') for e in get_strains]
         else:
             strains_list = strains.split(' ')
     return strains_list
+
 
 def get_num_strains():
     """
@@ -105,11 +106,13 @@ def position_counter(strains):
         pos = []
         for strain in strains:
             # Get every variant position
-            cursor = r.table(TABLE).filter({'StrainID': strain}).pluck('Position').run(connection)
+            cursor = r.table(TABLE).filter({'StrainID': strain}).pluck(
+                'Position').run(connection)
             cur = [strain['Position'] for strain in cursor]
             pos = pos+cur
         common = filter_counts(pos, len(strains))
     return common
+
 
 def fetch_given_strain_position(strain, position):
     """
@@ -132,10 +135,9 @@ def fetch_given_strain_position(strain, position):
     return result
 
 
-
 @task
 def get_variants_in_range(start, end, verbose=True,
-                    plucking = 'StrainID Position LocusTag Class SubClass'):
+                          plucking='StrainID Position LocusTag Class SubClass'):
     """
     Return all the variants in given [start:end] range (inclusive of)
 
@@ -164,10 +166,8 @@ def get_variants_in_range(start, end, verbose=True,
     ROW = 'Position'
     JSON_result = []
     with database.make_connection() as connection:
-        cursor = r.table(TABLE).filter(
-                    r.row[ROW] <= int(end)).filter(
-                    r.row[ROW] >= int(start)).pluck(
-                            plucking).run(connection)
+        cursor = r.table(TABLE).filter(r.row[ROW] <= int(end)).filter(
+            r.row[ROW] >= int(start)).pluck(plucking).run(connection)
         JSON_result = []
         for idx, document in enumerate(cursor):
             if verbose:
@@ -178,9 +178,10 @@ def get_variants_in_range(start, end, verbose=True,
             JSON_result.append(document)
         return JSON_result
 
+
 @task
 def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True,
-                plucking = 'StrainID Position LocusTag Class SubClass'):
+                            plucking='StrainID Position LocusTag Class SubClass'):
     """
     Return variants with a match in the "Product" with the regular_expression
 
@@ -203,8 +204,8 @@ def get_variants_by_keyword(regular_expression, ROW='Product', verbose=True,
     plucking = plucking.split(' ')
     JSON_result = []
     with database.make_connection() as connection:
-        cursor = r.table(TABLE).filter(lambda row:row[ROW].match(
-                    regular_expression)).pluck(plucking).run(connection)
+        cursor = r.table(TABLE).filter(lambda row: row[ROW].match(
+            regular_expression)).pluck(plucking).run(connection)
         for idx, document in enumerate(cursor):
             if verbose:
                 if idx != 0:
@@ -231,16 +232,18 @@ def plot_variant_positions(strains):
     if strains.lower() == 'all':
         strains = None
     strains = get_required_strains(strains)
-    conn = make_a_connection()
     gd_data = []
-    for strain in strains:
-        hits = r.table(TABLE).filter(lambda row:row['StrainID'].match(strain)).pluck('Position','Class').run(conn)
-        feat = []
-        for hit in hits:
-            cur = hit['Position']
-            feat.append(misc.create_feature(cur, cur, hit['Class'], strand=None))
-        gd_data.append(feat)
+    with database.make_connection() as connection:
+        for strain in strains:
+            hits = r.table(TABLE).filter(lambda row: row['StrainID'].match(
+                strain)).pluck('Position', 'Class').run(connection)
+            feat = []
+            for hit in hits:
+                cur = hit['Position']
+                feat.append(misc.create_feature(cur, cur, hit['Class'], strand=None))
+            gd_data.append(feat)
     imaging.plot_SNPs(gd_data, strains)
+
 
 @task
 def variant_hotspots(most_prevalent=100, verbose=True):
@@ -256,12 +259,12 @@ def variant_hotspots(most_prevalent=100, verbose=True):
     """
     verbose = ast.literal_eval(str(verbose))
     most_prevalent = int(most_prevalent)
-    conn = make_a_connection()
     ROW = 'Position'
     # Fetch & store all positions
-    cursor = r.table(TABLE).pluck(ROW).run(conn)
-    positions = [int(e[ROW]) for e in cursor]
-    # Count occurences at positions
+    with database.make_connection() as connection:
+        cursor = r.table(TABLE).pluck(ROW).run(connection)
+        positions = [int(e[ROW]) for e in cursor]
+        # Count occurences at positions
     counts = Counter(positions)
     mp = counts.most_common(most_prevalent)
     # Now extract out
@@ -270,15 +273,16 @@ def variant_hotspots(most_prevalent=100, verbose=True):
     results.append(header)
     if verbose:
         print header
-    for element in mp:
-        first_hit = list(r.table(TABLE).filter(r.row[ROW] == int(element[0])).pluck('Position', 'LocusTag').run(conn))[0]
-        product = '"'+list(r.table('ref_feat').filter({'LocusTag' : first_hit['LocusTag']}).pluck('Product').run(conn))[0]['Product']+'"'
-        cur = '%i,%i,%s,%s' % (element[1], first_hit['Position'], first_hit['LocusTag'], product)
-        results.append(cur)
-        if verbose:
-            print cur
-    conn.close()
+    with database.make_connection() as connection:
+        for element in mp:
+            first_hit = list(r.table(TABLE).filter(r.row[ROW] == int(element[0])).pluck('Position', 'LocusTag').run(connection))[0]
+            product = '"'+list(r.table('ref_feat').filter({'LocusTag': first_hit['LocusTag']}).pluck('Product').run(connection))[0]['Product']+'"'
+            cur = '%i,%i,%s,%s' % (element[1], first_hit['Position'], first_hit['LocusTag'], product)
+            results.append(cur)
+            if verbose:
+                print cur
     return results
+
 
 @task
 def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
@@ -297,15 +301,15 @@ def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
                                 conserved in N strains at this positions
     """
     verbose = ast.literal_eval(str(verbose))
-    if minimum_at_position == None:
+    if minimum_at_position is None:
         minimum_at_position = get_num_strains()
     else:
         minimum_at_position = int(minimum_at_position)
-    conn = make_a_connection()
     ROW = 'Position'
     # Fetch & store all positions
-    cursor = r.table(TABLE).pluck(ROW).run(conn)
-    positions = [int(e[ROW]) for e in cursor]
+    with database.make_connection() as connection:
+        cursor = r.table(TABLE).pluck(ROW).run(connection)
+        positions = [int(e[ROW]) for e in cursor]
     # Count occurences at positions
     counts = Counter(positions)
     # Filter out those below threshold
@@ -319,15 +323,16 @@ def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
     results.append(header)
     if verbose:
         print header
-    for element in lookup:
-        first_hit = list(r.table(TABLE).filter(r.row[ROW] == int(element)).pluck('Position', 'LocusTag').run(conn))[0]
-        product = '"'+list(r.table('ref_feat').filter({'LocusTag' : first_hit['LocusTag']}).pluck('Product').run(conn))[0]['Product']+'"'
-        cur = '%i,%s,%s' % (first_hit['Position'], first_hit['LocusTag'], product)
-        results.append(cur)
-        if verbose:
-            print cur
-    conn.close()
+    with database.make_connection() as connection:
+        for element in lookup:
+            first_hit = list(r.table(TABLE).filter(r.row[ROW] == int(element)).pluck('Position', 'LocusTag').run(connection))[0]
+            product = '"'+list(r.table('ref_feat').filter({'LocusTag': first_hit['LocusTag']}).pluck('Product').run(connection))[0]['Product']+'"'
+            cur = '%i,%s,%s' % (first_hit['Position'], first_hit['LocusTag'], product)
+            results.append(cur)
+            if verbose:
+                print cur
     return results
+
 
 @task
 def strain_variant_stats(strains=None, verbose=True):
@@ -346,26 +351,24 @@ def strain_variant_stats(strains=None, verbose=True):
     :returns: a list of results in CSV
     """
     verbose = ast.literal_eval(str(verbose))
-    conn = make_a_connection()
-    ROW = 'StrainID'
     strains = get_required_strains(strains)
     header = "StrainID,Total Variants,Substitution,Insertion,Deletion"
     results = []
     results.append(header)
     if verbose:
         print header
-    for strain in strains:
-        tmp = []
-        tmp.append(r.table(TABLE).filter({'StrainID': strain}).count().run(conn))
-        classes = ['substitution', 'insertion', 'deletion']
-        for c in classes:
-            tmp.append(r.table(TABLE).filter({'StrainID': strain,
-                                              'Class': c}).count().run(conn))
-        cur = "%s,%i,%i,%i,%i" % (strain, tmp[0], tmp[1], tmp[2], tmp[3])
-        if verbose:
-            print cur
-        results.append(cur)
-    conn.close()
+    with database.make_connection() as connection:
+        for strain in strains:
+            tmp = []
+            tmp.append(r.table(TABLE).filter({'StrainID': strain}).count().run(connection))
+            classes = ['substitution', 'insertion', 'deletion']
+            for c in classes:
+                tmp.append(r.table(TABLE).filter({'StrainID': strain,
+                                                  'Class': c}).count().run(connection))
+            cur = "%s,%i,%i,%i,%i" % (strain, tmp[0], tmp[1], tmp[2], tmp[3])
+            if verbose:
+                print cur
+            results.append(cur)
     return results
 
 
