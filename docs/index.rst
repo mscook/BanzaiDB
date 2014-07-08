@@ -26,6 +26,7 @@ Learn how to initalise a database, populate the database and query it!
    init.rst
    getting-metadata-into-banzaiDB.rst
 
+
 API documentation
 ~~~~~~~~~~~~~~~~~
 
@@ -34,7 +35,8 @@ Explore the available methods within BanzaiDB.
 .. toctree::
    :maxdepth: 1
 
-   API.rst
+   modules.rst
+
 
 Developer documentation
 ~~~~~~~~~~~~~~~~~~~~~~~

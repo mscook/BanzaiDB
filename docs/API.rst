@@ -1,3 +1,0 @@
-BanzaiDB API documentation
-==========================
-
