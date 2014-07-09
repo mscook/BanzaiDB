@@ -51,4 +51,4 @@ fi
 
 
 # Upload to PyPI
-twine upload dist/*
+twine -u mscook -p $PYPIPASS upload dist/*
