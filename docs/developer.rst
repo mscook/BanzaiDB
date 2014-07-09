@@ -62,7 +62,7 @@ For example::
     $ ~/BanzaiDB/BanzaiDB$ python BanzaiDB.py -h
     usage: BanzaiDB.py [-h] [-v] {init,populate,update,query} ...
 
-    BanzaiDB v 0.1.1 - Database for Banzai NGS pipeline tool (http://github.com/mscook/BanzaiDB)
+    BanzaiDB v 0.1.2 - Database for Banzai NGS pipeline tool (http://github.com/mscook/BanzaiDB)
 
     positional arguments:
       {init,populate,update,query}
