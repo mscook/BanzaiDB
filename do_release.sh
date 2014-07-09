@@ -36,8 +36,19 @@ mv API/* .
 rmdir API
 make html
 
+
 # tag & push the tag to github
 GIT=`git status`
+CLEAN='# On branch master nothing to commit, working directory clean'
+if [ "$s1" == "$s2" ]; then
+    git tag v$VERSION
+    git push --tags
+else
+    echo "Git not clean. Will not release"
+    exit
+fi 
+
+
 
 # Upload to PyPI
 
