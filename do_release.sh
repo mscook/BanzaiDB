@@ -16,7 +16,7 @@ python setup.py clean
 #    exit
 #fi 
 
-python setup.py sdist
+python setup.py sdist bdist_wheel
 pip install dist/BanzaiDB-$VERSION.tar.gz
 STATUS=`echo $?`
 if [ $STATUS -eq 0 ]; then
@@ -51,4 +51,4 @@ fi
 
 
 # Upload to PyPI
-
+twine upload dist/*
