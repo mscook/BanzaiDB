@@ -24,9 +24,8 @@
 What is BanzaiDB?
 -----------------
 
-**Please use the 0.1.1 release (https://github.com/mscook/BanzaiDB/releases). 
-It is an interim version before merging the nway-any branch. All versions 
-including 0.1.1 made some significant assumptions that are currently being 
+**Please use the releases (https://github.com/mscook/BanzaiDB/releases). All 
+versions including 0.1.1 made some significant assumptions that are currently being 
 improved.**
 
 BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing 
@@ -162,7 +161,7 @@ Once both RethinkDB and BanzaiDB are installed and the configuration is set::
     $ python BanzaiDB.py -h
     usage: BanzaiDB.py [-h] [-v] {init,populate,update,query} ...
 
-    BanzaiDB v0.1 - Database for Banzai NGS pipeline tool
+    BanzaiDB v0.1.1 - Database for Banzai NGS pipeline tool
     (http://github.com/mscook/BanzaiDB)
 
     positional arguments:
