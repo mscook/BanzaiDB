@@ -1,20 +1,20 @@
 VERSION=0.1.1
 
 # Do all the versioning stuff here..
+bumpversion patch
 
 
 # Clean, test, build the source distribution & pip install it
 # Need to get exit statuses here...
 python setup.py clean
-
-python setup.py test
-STATUS=`echo $?`
-if [ $STATUS -eq 0 ]; then
-    echo ""
-else
-    echo "Tests failed. Will not release"
-    exit
-fi 
+#python setup.py test
+#STATUS=`echo $?`
+#if [ $STATUS -eq 0 ]; then
+#    echo ""
+#else
+#    echo "Tests failed. Will not release"
+#    exit
+#fi 
 
 python setup.py sdist
 pip install dist/BanzaiDB-$VERSION.tar.gz
@@ -37,6 +37,7 @@ rmdir API
 make html
 
 
+git push
 # tag & push the tag to github
 GIT=`git status`
 CLEAN='# On branch master nothing to commit, working directory clean'
@@ -47,7 +48,6 @@ else
     echo "Git not clean. Will not release"
     exit
 fi 
-
 
 
 # Upload to PyPI
