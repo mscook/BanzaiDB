@@ -51,4 +51,9 @@ fi
 
 
 # Upload to PyPI
-twine -u mscook -p $PYPIPASS upload dist/*
+twine upload -u mscook -p $PYPIPASS dist/*
+
+
+# Clean up 
+python setup.py clean
+
