@@ -290,7 +290,10 @@ def reference_genome_features_to_JSON(genome_file):
                 parsed_list.append(JSON_f)
             # Do other (*RNA)
             elif feat.type in misc_set:
-                JSON_f['product'] = feat.qualifiers['product'][0]
+                try:
+                    JSON_f['product'] = feat.qualifiers['product'][0]
+                except KeyError:
+                    JSON_f['product'] = None
                 JSON_f['id'] = gid+"_"+str(JSON_f['start'])+"-"+str(JSON_f['end'])
                 parsed_list.append(JSON_f)
             else:
