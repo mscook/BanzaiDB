@@ -5,7 +5,7 @@
 # not use this file except in compliance with the License. You may
 # obtain a copy of the License at
 #
-# http://www.osedu.org/licenses/ECL-2.0
+#   http://www.osedu.org/licenses/ECL-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an "AS IS"
@@ -13,12 +13,15 @@
 # or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-import sys, os, traceback, argparse, time
-
+import sys
+import os
+import traceback
+import argparse
+import time
 import glob
 
 import rethinkdb as r
-from   rethinkdb.errors import RqlRuntimeError
+from rethinkdb.errors import RqlRuntimeError
 
 from BanzaiDB import core
 from BanzaiDB import database
@@ -32,23 +35,24 @@ BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing
 (NGS) analysis with a NoSQL database. We use the RethinkDB NoSQL database.
 """
 
-__title__         = 'BanzaiDB'
-__version__       = '0.1.2'
-__description__   = "Database tool for the Banzai NGS pipeline"
-__author__        = 'Mitchell Stanton-Cook'
-__author_email__  = 'm.stantoncook@gmail.com'
-__url__           = 'http://github.com/mscook/BanzaiDB'
-__license__       = 'ECL 2.0'
+__title__ = 'BanzaiDB'
+__version__ = '0.1.2'
+__description__ = "Database tool for the Banzai NGS pipeline"
+__author__ = 'Mitchell Stanton-Cook'
+__author_email__ = 'm.stantoncook@gmail.com'
+__url__ = 'http://github.com/mscook/BanzaiDB'
+__license__ = 'ECL 2.0'
 
 epi = "Licence: %s by %s <%s>" % (__license__,
                                   __author__,
                                   __author_email__)
-__doc__ = " %s v%s - %s (%s)" % ( __title__,
-                                  __version__,
-                                  __description__,
-                                  __url__)
+__doc__ = " %s v%s - %s (%s)" % (__title__,
+                                 __version__,
+                                 __description__,
+                                 __url__)
 
 BLOCKS = 2500
+
 
 def init_database_with_default_tables(args):
     """
