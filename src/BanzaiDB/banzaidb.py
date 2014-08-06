@@ -22,6 +22,7 @@ from   rethinkdb.errors import RqlRuntimeError
 
 from BanzaiDB import core
 from BanzaiDB import database
+from BanzaiDB import misc
 
 """
 BanzaiDB
@@ -47,7 +48,7 @@ __doc__ = " %s v%s - %s (%s)" % ( __title__,
                                   __description__,
                                   __url__)
 
-
+BLOCKS = 2500
 
 def init_database_with_default_tables(args):
     """
@@ -123,25 +124,24 @@ def populate_mapping(args):
     run_path = os.path.normpath(os.path.expanduser(args.run_path))
     # TODO - handle '.' in reference
     ref = run_path.split('/')[-1].split('.')[0]
-    infiles = glob.glob(run_path+'/*/report.txt')
+    infile = glob.glob(run_path+'/nway-SNPs_INDELS-comparison/*.any.withref')
+    assert len(infile) == 1
+    infile = infile[0]
     ref = os.path.join(run_path+'/', ref+'/reference.gbk')
     with database.make_connection() as connection:
-        for report in infiles:
-            parsed = core.nesoni_report_to_JSON(report)
-            count = len(parsed)
-            if count != 0:
-                inserted = r.table('variants').insert(parsed).run(connection)
-                strain_JSON = {"StrainID": parsed[0]['StrainID'],
+        parsed, stats = core.nesoni_report_to_JSON(core.nway_reportify(infile))
+        # Insert all variants
+        chunks = misc.chunk_list(parsed, BLOCKS)
+        for chunk in chunks:
+            inserted = r.table('variants').insert(chunk).run(connection)
+        print "Mapping statistics"
+        print "Strain,Variants"
+        for sid, count in stats.items():
+            print "%s,%s" % (sid, count)
+            strain_JSON = {"StrainID": sid,
                             "VarCount": count,
-                            "id": parsed[0]['StrainID']}
-                inserted = r.table('strains').insert(strain_JSON).run(connection)
-            else:
-                print "No variants for %s. Skipped" % (report)
-                s = report.split('/')[-2]
-                strain_JSON = {"StrainID" : s,
-                            "VarCount" : 0,
-                            "id" : s}
-                inserted = r.table('strains').insert(strain_JSON).run(connection)
+                            "id": sid}
+            inserted = r.table('strains').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
         inserted = r.table('ref').insert(ref).run(connection)

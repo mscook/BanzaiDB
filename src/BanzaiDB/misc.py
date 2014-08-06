@@ -39,3 +39,11 @@ def create_feature(begin, end, feat_type, strand=None):
     else:
         return SeqFeature.SeqFeature(location, type=feat_type,
                                      strand=strand)
+
+
+def chunk_list(l, n):
+    """
+    Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]

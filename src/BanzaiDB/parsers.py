@@ -20,14 +20,20 @@ def parse_evidence(evidence):
     """
     From an evidence string/element return a dictionary or obs/counts
 
+    Updated where to handle 0 coverage in an 'N' call! In this case we set
+    N = -1
+
     :param evidence: an evidence string. It looks something like this -
                         Ax27 AGCAx1 AGCAATTAATTAAAATAAx
     """
     obs_count = {}
     elem = evidence.split(' ')
-    for e in elem:
-        obs, count = e.split('x')
-        obs_count[obs] = int(count)
+    if elem == ['']:
+        obs_count['N'] = -1
+    else:
+        for e in elem:
+            obs, count = e.split('x')
+            obs_count[obs] = int(count)
     return obs_count
 
 
@@ -76,11 +82,20 @@ def parse_substitution(consequence):
         sub_type = 'synonymous'
         protein = ' '.join(elem[7:])
     # Handle correlated (believe these are syn)
+    # 2 classes
+    # CDS frame-shift LACR_0006 base 526 codon 176 of codons 63..186 XRE family transcriptional regulator
+    # CDS frame-shift LACR_0214 base 352 codon 118 hypothetical protein'
     elif elem[1].find("frame-shift") != -1:
-        sub_type = 'synonymous'
-        correlated = True
-        region     = elem[9]
-        protein    = ' '.join(elem[10:])
+        if elem[7] == 'of':
+            sub_type = 'synonymous'
+            correlated = True
+            region     = elem[9]
+            protein    = ' '.join(elem[10:])
+        else:
+            sub_type = 'synonymous'
+            correlated = True
+            region     = None
+            protein    = ' '.join(elem[7:])
     else:
         raise Exception("Error in subsitution", elem)
     # Tidy up possible other features

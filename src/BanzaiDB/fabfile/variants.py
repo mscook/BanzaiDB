@@ -136,6 +136,20 @@ def fetch_given_strain_position(strain, position):
 
 
 @task
+def get_variant_stats(strains):
+    """
+    Return (and print) variant stats given 1 or more space delimited strain IDs
+
+    Breakdown of counts:
+        * substitution (syn/non-sys)
+        * insertion
+        * deletion
+    """
+    results = {}
+    with database.make_connection() as connection:
+        pass
+
+@task
 def get_variants_in_range(start, end, verbose=True,
                           plucking='StrainID Position LocusTag Class SubClass'):
     """
@@ -351,6 +365,7 @@ def strain_variant_stats(strains=None, verbose=True):
     :returns: a list of results in CSV
     """
     verbose = ast.literal_eval(str(verbose))
+    ROW = 'StrainID'
     strains = get_required_strains(strains)
     header = "StrainID,Total Variants,Substitution,Insertion,Deletion"
     results = []
