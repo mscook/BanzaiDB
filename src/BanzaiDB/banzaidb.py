@@ -56,12 +56,12 @@ BLOCKS = 2500
 
 def init_database_with_default_tables(args):
     """
-    Create a new RethinkDB database
+    Create a new RethinkDB database and initialise (default) tables
 
     :param args: an argparse argument (force)
     """
     # Add additional (default) tables here...
-    def_tables = ['variants', 'strains', 'ref', 'ref_feat']
+    def_tables = ['variants', 'strains', 'reference', 'reference_features']
     with database.make_connection() as connection:
         try:
             r.db_create(connection.db).run(connection)
@@ -148,8 +148,8 @@ def populate_mapping(args):
             inserted = r.table('strains').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
-        inserted = r.table('ref').insert(ref).run(connection)
-        inserted = r.table('ref_feat').insert(ref_meta).run(connection)
+        inserted = r.table('reference').insert(ref).run(connection)
+        inserted = r.table('reference_features').insert(ref_meta).run(connection)
 
 
 def populate_assembly():

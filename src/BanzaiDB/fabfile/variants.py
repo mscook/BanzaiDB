@@ -66,7 +66,7 @@ def get_num_strains():
     with database.make_connection() as connection:
         # In case reference is included in run
         # Will need to update for multiple runs
-        ref_id = list(r.table('ref').run(connection))[0]['id']
+        ref_id = list(r.table('reference').run(connection))[0]['id']
         for e in strains:
             if e.find(ref_id) != -1:
                 strain_count = strain_count-1
@@ -290,7 +290,7 @@ def variant_hotspots(most_prevalent=100, verbose=True):
     with database.make_connection() as connection:
         for element in mp:
             first_hit = list(r.table(TABLE).filter(r.row[ROW] == int(element[0])).pluck('Position', 'LocusTag').run(connection))[0]
-            product = '"'+list(r.table('ref_feat').filter({'LocusTag': first_hit['LocusTag']}).pluck('Product').run(connection))[0]['Product']+'"'
+            product = '"'+list(r.table('reference_features').filter({'LocusTag': first_hit['LocusTag']}).pluck('Product').run(connection))[0]['Product']+'"'
             cur = '%i,%i,%s,%s' % (element[1], first_hit['Position'], first_hit['LocusTag'], product)
             results.append(cur)
             if verbose:
@@ -340,7 +340,7 @@ def variant_positions_within_atleast(minimum_at_position=None, verbose=True):
     with database.make_connection() as connection:
         for element in lookup:
             first_hit = list(r.table(TABLE).filter(r.row[ROW] == int(element)).pluck('Position', 'LocusTag').run(connection))[0]
-            product = '"'+list(r.table('ref_feat').filter({'LocusTag': first_hit['LocusTag']}).pluck('Product').run(connection))[0]['Product']+'"'
+            product = '"'+list(r.table('reference_features').filter({'LocusTag': first_hit['LocusTag']}).pluck('Product').run(connection))[0]['Product']+'"'
             cur = '%i,%s,%s' % (first_hit['Position'], first_hit['LocusTag'], product)
             results.append(cur)
             if verbose:
