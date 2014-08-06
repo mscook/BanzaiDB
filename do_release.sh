@@ -1,5 +1,10 @@
 #VERSION=0.1.2
 
+# Remove any existing install in venv...
+pip uninstall BanzaiDB
+pip uninstall BanzaiDB
+
+
 # Do all the versioning stuff here..
 bumpversion patch
 
@@ -35,6 +40,7 @@ sphinx-apidoc -o API ../src/BanzaiDB
 mv API/* .
 rmdir API
 make html
+cd ..
 
 
 git push
@@ -50,10 +56,5 @@ else
 fi 
 
 
-# Upload to PyPI
-twine upload -u mscook -p $PYPIPASS dist/*
-
-
-# Clean up 
-python setup.py clean
-
+# Upload to PyPI & clean
+twine upload -u mscook -p $PYPIPASS dist/* && python setup.py clean
