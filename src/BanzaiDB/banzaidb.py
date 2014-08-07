@@ -61,7 +61,7 @@ def init_database_with_default_tables(args):
     :param args: an argparse argument (force)
     """
     # Add additional (default) tables here...
-    def_tables = ['variants', 'strains', 'reference', 'reference_features']
+    def_tables = ['determined_variants', 'strains_under_investigation', 'references', 'reference_features']
     with database.make_connection() as connection:
         try:
             r.db_create(connection.db).run(connection)
@@ -137,7 +137,7 @@ def populate_mapping(args):
         # Insert all variants
         chunks = misc.chunk_list(parsed, BLOCKS)
         for chunk in chunks:
-            inserted = r.table('variants').insert(chunk).run(connection)
+            inserted = r.table('determined_variants').insert(chunk).run(connection)
         print "Mapping statistics"
         print "Strain,Variants"
         for sid, count in stats.items():
@@ -145,10 +145,10 @@ def populate_mapping(args):
             strain_JSON = {"StrainID": sid,
                             "VarCount": count,
                             "id": sid}
-            inserted = r.table('strains').insert(strain_JSON).run(connection)
+            inserted = r.table('strains_under_investigation').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
-        inserted = r.table('reference').insert(ref).run(connection)
+        inserted = r.table('references').insert(ref).run(connection)
         inserted = r.table('reference_features').insert(ref_meta).run(connection)
 
 

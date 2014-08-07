@@ -24,7 +24,7 @@ from BanzaiDB import imaging
 
 # __version__ = 0.1.2
 
-TABLE = 'variants'
+TABLE = 'determined_variants'
 
 
 def get_required_strains(strains):
@@ -45,7 +45,7 @@ def get_required_strains(strains):
     strains_list = []
     with database.make_connection() as connection:
         if strains is None:
-            get_strains = r.table('strains').pluck('StrainID').run(connection)
+            get_strains = r.table('strains_under_investigation').pluck('StrainID').run(connection)
             strains_list = [e['StrainID'].encode('ascii', 'ignore') for e in get_strains]
         else:
             strains_list = strains.split(' ')
@@ -66,7 +66,7 @@ def get_num_strains():
     with database.make_connection() as connection:
         # In case reference is included in run
         # Will need to update for multiple runs
-        ref_id = list(r.table('reference').run(connection))[0]['id']
+        ref_id = list(r.table('references').run(connection))[0]['id']
         for e in strains:
             if e.find(ref_id) != -1:
                 strain_count = strain_count-1
