@@ -51,7 +51,7 @@ def get_required_strains(strains):
             strains_list = strains.split(' ')
     return strains_list
 
-
+@task
 def get_num_strains():
     """
     Get the number of strains in the study
@@ -65,8 +65,8 @@ def get_num_strains():
     strain_count = len(strains)
     with database.make_connection() as connection:
         # In case reference is included in run
-        # Will need to update for multiple runs
-        ref_id = list(r.table('references').run(connection))[0]['id']
+        # Supports current reference
+        ref_id = r.table('references').get("current_reference").run(connection)["reference_id"]
         for e in strains:
             if e.find(ref_id) != -1:
                 strain_count = strain_count-1
