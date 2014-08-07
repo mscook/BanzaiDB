@@ -145,11 +145,16 @@ def populate_mapping(args):
             strain_JSON = {"StrainID": sid,
                             "VarCount": count,
                             "id": sid}
-            inserted = r.table('strains_under_investigation').insert(strain_JSON).run(connection)
+            r.table('strains_under_investigation').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
         # Do we already have a reference stored as current?
-        if r.table('references').get("current_reference").hasFields("reference_id").run(connection):
+        need_update = True
+        try:
+            r.table('references').get("current_reference").has_fields("reference_id").run(connection)
+        except RqlRuntimeError:
+            need_update = False
+        if need_update:
             stored = r.table('references').get("current_reference").pluck("reference_id", "revision").run(connection)
             # Do we need to update...
             if stored["reference_id"] != ref["id"] or stored["revision"] != ref["revision"]:
@@ -163,6 +168,7 @@ def populate_mapping(args):
             r.table('references').insert(ref).run(connection)
             r.table('references').insert({"id": "current_reference", "reference_id": ref["id"], "revision": ref["revision"]})
             r.table('reference_features').insert(ref_meta).run(connection)
+
 
 def populate_assembly():
     """
