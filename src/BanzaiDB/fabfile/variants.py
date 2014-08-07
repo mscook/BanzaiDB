@@ -51,7 +51,6 @@ def get_required_strains(strains):
             strains_list = strains.split(' ')
     return strains_list
 
-@task
 def get_num_strains():
     """
     Get the number of strains in the study
