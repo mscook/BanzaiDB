@@ -148,9 +148,21 @@ def populate_mapping(args):
             inserted = r.table('strains_under_investigation').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
-        inserted = r.table('references').insert(ref).run(connection)
-        inserted = r.table('reference_features').insert(ref_meta).run(connection)
-
+        # Do we already have a reference stored as current?
+        if r.table('references').get("current_reference").hasFields("reference_id").run(connection):
+            stored = r.table('references').get("current_reference").pluck("reference_id", "revision").run(connection)
+            # Do we need to update...
+            if stored["reference_id"] != ref["id"] or stored["revision"] != ref["revision"]:
+                r.table('references').insert(ref).run(connection)
+                r.table('references').get("current_reference").update({"reference_id": ref["id"], "revision": ref["revision"]}).run(connection)
+                r.table('reference_features').insert(ref_meta).run(connection)
+            else:
+                print "Current stored reference and reference for this run are the same"
+                print "Noting doing anything"
+        else:
+            r.table('references').insert(ref).run(connection)
+            r.table('references').insert({"id": "current_reference", "reference_id": ref["id"], "revision": ref["revision"]})
+            r.table('reference_features').insert(ref_meta).run(connection)
 
 def populate_assembly():
     """
