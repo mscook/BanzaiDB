@@ -61,7 +61,8 @@ def init_database_with_default_tables(args):
     :param args: an argparse argument (force)
     """
     # Add additional (default) tables here...
-    def_tables = ['determined_variants', 'strains_under_investigation', 'references', 'reference_features']
+    def_tables = ['determined_variants', 'strains_under_investigation',
+                  'references', 'reference_features']
     with database.make_connection() as connection:
         try:
             r.db_create(connection.db).run(connection)
@@ -79,7 +80,7 @@ def init_database_with_default_tables(args):
             else:
                 sys.exit(1)
         print ("Initalised database %s. %s contains the following tables: "
-                "%s" % (connection.db, connection.db, ', '.join(def_tables)))
+               "%s" % (connection.db, connection.db, ', '.join(def_tables)))
 
 
 def populate_database_with_data(args):
@@ -137,14 +138,14 @@ def populate_mapping(args):
         # Insert all variants
         chunks = misc.chunk_list(parsed, BLOCKS)
         for chunk in chunks:
-            inserted = r.table('determined_variants').insert(chunk).run(connection)
+            r.table('determined_variants').insert(chunk).run(connection)
         print "Mapping statistics"
         print "Strain,Variants"
         for sid, count in stats.items():
             print "%s,%s" % (sid, count)
             strain_JSON = {"StrainID": sid,
-                            "VarCount": count,
-                            "id": sid}
+                           "VarCount": count,
+                           "id": sid}
             r.table('strains_under_investigation').insert(strain_JSON).run(connection)
         # Now, do the reference
         ref, ref_meta = core.reference_genome_features_to_JSON(ref)
@@ -157,16 +158,17 @@ def populate_mapping(args):
         if need_update:
             stored = r.table('references').get("current_reference").pluck("reference_id", "revision").run(connection)
             # Do we need to update...
-            if stored["reference_id"] != ref["id"] or stored["revision"] != ref["revision"]:
+            if (stored["reference_id"] != ref["id"] or
+                stored["revision"] != ref["revision"]):
                 r.table('references').insert(ref).run(connection)
                 r.table('references').get("current_reference").update({"reference_id": ref["id"], "revision": ref["revision"]}).run(connection)
                 r.table('reference_features').insert(ref_meta).run(connection)
             else:
-                print "Current stored reference and reference for this run are the same"
-                print "Noting doing anything"
+                print ("Current stored reference and reference for this run "
+                       "are the same \n Not doing anything")
         else:
             r.table('references').insert(ref).run(connection)
-            r.table('references').insert({"id": "current_reference", "reference_id": ref["id"], "revision": ref["revision"]})
+            r.table('references').insert({"id": "current_reference", "reference_id": ref["id"], "revision": ref["revision"]}).run(connection)
             r.table('reference_features').insert(ref_meta).run(connection)
 
 
