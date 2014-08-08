@@ -161,7 +161,7 @@ Once both RethinkDB and BanzaiDB are installed and the configuration is set::
     $ python BanzaiDB.py -h
     usage: BanzaiDB.py [-h] [-v] {init,populate,update,query} ...
 
-    BanzaiDB v 0.1.2 - Database for Banzai NGS pipeline tool
+    BanzaiDB v 0.2.0 - Database for Banzai NGS pipeline tool
     (http://github.com/mscook/BanzaiDB)
 
     positional arguments:

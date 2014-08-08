@@ -1,4 +1,4 @@
-#VERSION=0.1.2
+#VERSION=0.2.0
 
 # Remove any existing install in venv...
 pip uninstall BanzaiDB
