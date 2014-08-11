@@ -31,13 +31,12 @@ have ran nesoni nway). BanzaiDB API v3 assumes that you still have accessto
 the consensus.fa (called a consensus). We need this data to store information 
 in BanzaiDB about coverage.
 
+**All versions of BanzaiDB prior to v0.2 made some significant assumptions 
+that are currently being improved.**
+
 
 What is BanzaiDB?
 -----------------
-
-**Please use the releases (https://github.com/mscook/BanzaiDB/releases). All 
-versions including most recent made some significant assumptions that are 
-currently being improved.**
 
 BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing 
 (NGS) analysis with a NoSQL_ database. We use the RethinkDB_ NoSQL database.
@@ -135,9 +134,10 @@ You will also need a few Python modules:
 The Python modules should/will be pulled down automatically when installing 
 BanzaiDB.
 
-We recommend you increase the rethinkdb python `driver performance`_. We have 
-found that in some cases the installation of C++ backend fails. `We provide`_ 
-a simple protocol that we have found works.
+**The following is no longer needed if you're using a recent version of 
+RethinkDB:** We recommend you increase the rethinkdb python 
+`driver performance`_. We have found that in some cases the installation of C++ 
+backend fails. `We provide`_ a simple protocol that we have found works.
 
 
 BanzaiDB Installation
@@ -145,6 +145,10 @@ BanzaiDB Installation
 
 Something like this::
 
+    $ # A 'stable' release
+    $ pip install BanzaiDB
+    $
+    $ # More bleeding....
     $ git clone https://github.com/mscook/BanzaiDB.git
     $ cd BanzaiDB
     $ python setup.py install

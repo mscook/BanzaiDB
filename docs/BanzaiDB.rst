@@ -75,6 +75,14 @@ BanzaiDB.imaging module
     :undoc-members:
     :show-inheritance:
 
+BanzaiDB.mapping module
+-----------------------
+
+.. automodule:: BanzaiDB.mapping
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 BanzaiDB.misc module
 --------------------
 
