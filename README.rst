@@ -21,6 +21,17 @@
 (Using landscape.io and drone.io)
 
 
+News
+----
+
+**API changes (v1 -> v2 -> v3 -> v?)**. The population of a mapping run 
+into BanzaiDB was dependent on a nesoni run. Originally we (API v1) parsed 
+the reports.txt for each strain. In API v2 we parse the nway.any (assumes you 
+have ran nesoni nway). BanzaiDB API v3 assumes that you still have accessto 
+the consensus.fa (called a consensus). We need this data to store information 
+in BanzaiDB about coverage.
+
+
 What is BanzaiDB?
 -----------------
 
@@ -109,6 +120,7 @@ You will need:
     * a RethinkDB_ server/instance. This can be running locally or on a VPS, 
     * git (to clone this repository) and
     * pip_
+    * bedtools, samtools and tabix (for pybedtools)
 
 You will also need a few Python modules:
     * rethinkdb
@@ -117,6 +129,8 @@ You will also need a few Python modules:
     * fabric
     * tablib
     * argparse (if Python 2.6)
+    * pybedtools (you will probably also need to install cython)
+
 
 The Python modules should/will be pulled down automatically when installing 
 BanzaiDB.

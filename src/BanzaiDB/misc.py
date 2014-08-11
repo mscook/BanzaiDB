@@ -13,6 +13,7 @@
 
 
 from Bio import SeqFeature
+from itertools import groupby, count
 
 
 def create_feature(begin, end, feat_type, strand=None):
@@ -26,7 +27,8 @@ def create_feature(begin, end, feat_type, strand=None):
 
     :type begin: int
     :type end: int
-    :type feat_type: string (typically one of insertion, deletion, substitution)
+    :type feat_type: string (typically one of insertion, deletion,
+                             substitution)
     :type stand: None or int
 
     :returns: a Bio.SeqFeature object
@@ -47,3 +49,34 @@ def chunk_list(l, n):
     """
     for i in xrange(0, len(l), n):
         yield l[i:i+n]
+
+
+# Below is borrowed from: http://codereview.stackexchange.com/questions/5196/
+# grouping-consecutive-numbers-into-ranges-in-python-3-2
+def as_range(positions):
+    """
+    Given a list of positions, merge them into intervals if possible
+    """
+    l = list(positions)
+    if len(l) > 1:
+        return '{0}-{1}'.format(l[0], l[-1])
+    else:
+        return '{0}'.format(l[0])
+
+
+def get_intervals(ranges):
+    """
+    Returns a set of intervals in format [(begin, end) ...]
+    """
+    interval_list = []
+    x = ','.join(as_range(g) for _, g in groupby(
+        ranges, key=lambda n, c=count(): n-next(c)))
+    intervals = x.split(',')
+    for idx, e in enumerate(intervals):
+        try:
+            begin, end = e.split('-')
+        except ValueError:
+            begin, end = e, e
+        begin, end = int(begin), int(end)
+        interval_list.append((begin, end))
+    return interval_list

@@ -19,6 +19,7 @@ import traceback
 import argparse
 import time
 import glob
+import json
 
 import rethinkdb as r
 from rethinkdb.errors import RqlRuntimeError
@@ -26,6 +27,7 @@ from rethinkdb.errors import RqlRuntimeError
 from BanzaiDB import core
 from BanzaiDB import database
 from BanzaiDB import misc
+from BanzaiDB import mapping
 
 """
 BanzaiDB
@@ -170,6 +172,15 @@ def populate_mapping(args):
             r.table('references').insert(ref).run(connection)
             r.table('references').insert({"id": "current_reference", "reference_id": ref["id"], "revision": ref["revision"]}).run(connection)
             r.table('reference_features').insert(ref_meta).run(connection)
+        # This is for adding the coverage to the strains_under_investigation
+        strains = r.table('strains_under_investigation').pluck("StrainID").run(connection)
+        cur_ref = r.table('references').get('current_reference').run(connection)
+        ref = cur_ref["reference_id"]+"_"+str(cur_ref["revision"])
+        for e in strains:
+            # open the userplot of the current reference & strain
+            not_called = mapping.get_N_char_positions(run_path, e['StrainID'])
+            ranges = misc.get_intervals(not_called)
+            r.table('strains_under_investigation').get(e['StrainID']).update({"reference": ref, "coverage": json.dumps(ranges)}).run(connection)
 
 
 def populate_assembly():
