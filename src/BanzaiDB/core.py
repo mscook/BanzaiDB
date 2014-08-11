@@ -143,7 +143,7 @@ def nesoni_report_to_JSON(reportified):
     See: tables.rst for info on what is stored in RethinkDB
 
     :param reportified: the reportified nway.any file (been through
-    nway_reportify()). This is essentially a list of tuples
+                        nway_reportify()). This is essentially a list of tuples
 
     :returns: a list of JSON
     """
