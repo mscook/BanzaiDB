@@ -38,7 +38,7 @@ BanzaiDB is a tool for pairing Microbial Genomics Next Generation Sequencing
 """
 
 __title__ = 'BanzaiDB'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __description__ = "Database tool for the Banzai NGS pipeline"
 __author__ = 'Mitchell Stanton-Cook'
 __author_email__ = 'm.stantoncook@gmail.com'
