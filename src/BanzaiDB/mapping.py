@@ -45,3 +45,37 @@ def get_N_char_positions(run_path, sid):
         if e == 'N':
             no_call.append(idx)
     return no_call
+
+def get_coverage(run_path, sid):
+    """
+    Return any abnormal coverage information in the .consequences file
+    """
+    filename = sid + ".consequences" #change this when we work out naming convention
+    strain_features = []
+
+    with open(os.path.join(os.path.join(run_path, sid), filename)) as fin:
+        for idx, line in enumerate(fin):
+            feature = {}
+            if idx >= 1:
+                cur = line.split("\t")
+                feature['id'] = cur[0]+'_'+sid+'_'+cur[1]
+                coverage = float(cur[5])
+
+                # Only store if there is interesting coverage statistics
+                if coverage != 1.0: # 
+                    feature['coverage'] = coverage
+
+                old_len, new_len = int(cur[2]), int(cur[3])
+                AA_len = old_len - new_len
+               
+                # Only store if there is an indel 
+                if AA_len != 0:
+                    feature['aa_difference'] = AA_len
+
+                if 'coverage' in feature or 'difference' in feature:
+                    feature['StrainID'] = sid 
+                    feature['Reference'] = cur[0]
+                    feature['LocusTag'] = cur[1]
+                    strain_features.append(feature)
+
+    return strain_features

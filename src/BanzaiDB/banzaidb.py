@@ -64,7 +64,7 @@ def init_database_with_default_tables(args):
     """
     # Add additional (default) tables here...
     def_tables = ['determined_variants', 'strains_under_investigation',
-                  'references', 'reference_features']
+                  'references', 'reference_features', 'strain_features']
     with database.make_connection() as connection:
         try:
             r.db_create(connection.db).run(connection)
@@ -177,11 +177,15 @@ def populate_mapping(args):
         cur_ref = r.table('references').get('current_reference').run(connection)
         ref = cur_ref["reference_id"]+"_"+str(cur_ref["revision"])
         for e in strains:
-            # open the userplot of the current reference & strain
-            not_called = mapping.get_N_char_positions(run_path, e['StrainID'])
-            ranges = misc.get_intervals(not_called)
-            r.table('strains_under_investigation').get(e['StrainID']).update({"reference": ref, "coverage": json.dumps(ranges)}).run(connection)
+            coverage = mapping.get_coverage(run_path, e['StrainID'])
+            r.table('strain_features').insert(coverage).run(connection)
 
+        # Add relations from ref_feat to variants
+        for feature in ref_meta:
+            r.table('variants')\
+                .filter({"LocusTag" : feature['LocusTag']})\
+                .update({"RefFeat" : feature['id']})\
+                .run(connection)
 
 def populate_assembly():
     """
